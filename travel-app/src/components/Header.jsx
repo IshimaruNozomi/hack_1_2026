@@ -1,8 +1,26 @@
-export default function Header() {
+import { useState } from 'react'
+
+export default function Header({ onLogout }) {
+  const [open, setOpen] = useState(false)
+
   return (
     <div style={styles.header}>
       <h1 style={styles.title}>trip_note</h1>
-      <div style={styles.menu}>☰</div>
+
+      {/* ハンバーガー */}
+      <div
+        style={styles.menu}
+        onClick={() => setOpen(!open)}
+      >
+        ☰
+      </div>
+
+      {/* ドロップダウンメニュー */}
+      {open && (
+        <div style={styles.dropdown}>
+          <button onClick={onLogout}>ログアウト</button>
+        </div>
+      )}
     </div>
   )
 }
@@ -13,7 +31,8 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '10px 20px',
-    borderBottom: '1px solid #ddd'
+    borderBottom: '1px solid #ddd',
+    position: 'relative'
   },
   title: {
     margin: 0
@@ -21,5 +40,15 @@ const styles = {
   menu: {
     fontSize: '24px',
     cursor: 'pointer'
+  },
+  dropdown: {
+    position: 'absolute',
+    top: '50px',
+    right: '20px',
+    background: '#fff',
+    border: '1px solid #ddd',
+    borderRadius: '8px',
+    padding: '10px',
+    zIndex: 1000
   }
 }

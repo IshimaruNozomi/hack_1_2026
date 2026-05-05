@@ -43,10 +43,8 @@ export default function MainPage({ user, onLogout }) {
 
   return (
     <div>
-      <Header />
-
+      <Header onLogout={onLogout} />
       <div style={{ padding: '10px' }}>
-        <button onClick={onLogout}>ログアウト</button>
       </div>
 
       {/* ＋ボタン */}
