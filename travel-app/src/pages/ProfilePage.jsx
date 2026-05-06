@@ -17,22 +17,46 @@ export default function ProfilePage({ user, setPage }) {
     }
     console.log('ProfilePage: fetchProfile start', { user })
     try {
+      // maybeSingle を使うとレコードが無くても error にならない
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
       if (error) {
         console.error('fetchProfile error', error)
-      } else if (isMountedRef.current) {
-        setProfile(data)
-        console.log('ProfilePage: fetched profile', { data })
+      }
 
-        // 表示データは profile に入れるだけ（読み取り専用）
+      if (isMountedRef.current) {
+        if (data) {
+          setProfile(data)
+          console.log('ProfilePage: fetched profile', { data })
+        } else {
+          // プロフィールが存在しない場合、自動で初期レコードを作成して表示する
+          const defaultName = (user.email || '').split('@')[0] || null
+          const { data: inserted, error: insertErr } = await supabase
+            .from('profiles')
+            .insert({ id: user.id, username: defaultName, bio: '' })
+            .select()
+            .maybeSingle()
+
+          if (insertErr) {
+            console.error('failed to insert default profile', insertErr)
+            // 作成に失敗しても空の profile を表示して読み込みを終える
+            setProfile({ username: defaultName, bio: '' })
+          } else {
+            setProfile(inserted || { username: defaultName, bio: '' })
+            console.log('ProfilePage: created default profile', { inserted })
+          }
+        }
       }
     } catch (err) {
       console.error('fetchProfile failed', err)
+      if (isMountedRef.current) {
+        // エラー時でも UI を停止させ、最低限の表示を行う
+        setProfile({ username: user?.email || '未設定', bio: '' })
+      }
     } finally {
       if (isMountedRef.current) setLoading(false)
     }
