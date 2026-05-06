@@ -4,15 +4,7 @@ import { supabase } from '../lib/supabase'
 export default function ProfilePage({ user, setPage }) {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
-
-  const [isEditOpen, setIsEditOpen] = useState(false)
-
-  const [form, setForm] = useState({
-    username: '',
-    bio: ''
-  })
-  const [saving, setSaving] = useState(false)
-  
+  // 編集機能は不要なので削除。表示専用にする。
 
   // マウント状態を追跡してアンマウント後の setState を防ぐ
   const isMountedRef = useRef(true)
@@ -37,12 +29,7 @@ export default function ProfilePage({ user, setPage }) {
         setProfile(data)
         console.log('ProfilePage: fetched profile', { data })
 
-        // フォーム初期化
-        setForm({
-          username: data?.username || '',
-          bio: data?.bio || ''
-        })
-  // clear any prior errors in console only
+        // 表示データは profile に入れるだけ（読み取り専用）
       }
     } catch (err) {
       console.error('fetchProfile failed', err)
@@ -63,50 +50,7 @@ export default function ProfilePage({ user, setPage }) {
     }
   }, [fetchProfile, user])
 
-  const handleSave = async () => {
-    if (!user || !user.id) {
-      alert('ユーザーが見つかりません')
-      return
-    }
-
-    setSaving(true)
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .update({
-          username: form.username,
-          bio: form.bio
-        })
-        .eq('id', user.id)
-        .select()
-
-      if (error) {
-        console.error('update profile error', error)
-        alert('プロフィールの保存に失敗しました')
-        return
-      }
-
-      // supabase の update(...).select() は配列を返すことがあるため対応
-      const updated = Array.isArray(data) ? data[0] : data
-
-      if (isMountedRef.current) {
-        // DB の返り値を使って画面を正確に更新
-        setProfile((prev) => ({
-          ...prev,
-          username: updated?.username ?? form.username,
-          bio: updated?.bio ?? form.bio
-        }))
-
-        setIsEditOpen(false)
-      }
-    } catch (err) {
-      console.error('handleSave failed', err)
-      alert('保存中にエラーが発生しました')
-    } finally {
-      if (isMountedRef.current) setSaving(false)
-    }
-  }
-
+  // 編集・保存機能は削除済み
   // ページ全体をローディングで置き換えず、まずはユーザー情報（email など）を先に表示する。
   const displayName = profile?.username || user?.email || '未設定'
 
@@ -114,58 +58,16 @@ export default function ProfilePage({ user, setPage }) {
     <div style={styles.container}>
       <h2>プロフィール</h2>
 
-      {/* プロフィール表示 */}
+      {/* プロフィール表示（読み取り専用） */}
       <div style={styles.card}>
-        <p><b>名前：</b> {displayName}</p>
+        <p><b>名前：</b> {loading && !profile ? '読み込み中...' : displayName}</p>
         <p><b>自己紹介：</b></p>
-        <p>{profile?.bio || 'まだ登録されていません'}</p>
+        <p>{loading && !profile ? '読み込み中...' : (profile?.bio || 'まだ登録されていません')}</p>
       </div>
-
-      {/* ボタン */}
-      <button onClick={() => setIsEditOpen(true)}>
-        編集する
-      </button>
 
       <button onClick={() => setPage('main')}>
         戻る
       </button>
-
-      {/* モーダル */}
-      {isEditOpen && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modal}>
-            <h3>プロフィール編集</h3>
-
-            <input
-              value={form.username}
-              onChange={(e) =>
-                setForm({ ...form, username: e.target.value })
-              }
-              placeholder="名前"
-              style={styles.input}
-            />
-
-            <textarea
-              value={form.bio}
-              onChange={(e) =>
-                setForm({ ...form, bio: e.target.value })
-              }
-              placeholder="自己紹介"
-              style={styles.textarea}
-            />
-
-            <div style={styles.buttonRow}>
-              <button onClick={handleSave} disabled={saving}>
-                {saving ? '保存中...' : '保存'}
-              </button>
-
-              <button onClick={() => setIsEditOpen(false)}>
-                キャンセル
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
