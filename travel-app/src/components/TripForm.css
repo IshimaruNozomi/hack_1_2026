@@ -87,7 +87,18 @@
   color: #666;
 }
 
-.map-section {
-  margin: 15px 0;
-  width: 100%;
+/* クローズボタン*/
+.form-close {
+  align-self: flex-end;
+  background: #e5e7eb;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.form-close:hover {
+  background: #d1d5db;
 }

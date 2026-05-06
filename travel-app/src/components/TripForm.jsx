@@ -3,7 +3,14 @@ import { supabase } from '../lib/supabase'
 import SelectMap from '../components/SelectMap'
 import './TripForm.css'
 
-export default function TripForm({ user, onSaved }) {
+export default function TripForm({
+  user,
+  onSaved,
+  onClose,
+  latitude,
+  longitude
+}) {
+
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [date, setDate] = useState('')
@@ -16,6 +23,7 @@ export default function TripForm({ user, onSaved }) {
   const [members, setMembers] = useState('')
   const [satisfaction, setSatisfaction] = useState('')
   const [cost, setCost] = useState('')
+  
 
   const handleSubmit = async () => {
     if (!title || !lat || !lng) {
@@ -64,6 +72,13 @@ export default function TripForm({ user, onSaved }) {
   return (
     <div className="trip-form">
       <h2 className="form-title">旅を記録</h2>
+      <button
+        type="button"
+        onClick={onClose}
+        className="form-close"
+      >
+        閉じる
+      </button>
 
       {/* 入力群 */}
       <input

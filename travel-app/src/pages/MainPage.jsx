@@ -84,9 +84,11 @@ export default function MainPage({ user, onLogout, setPage }) {
                 fetchTrips()
                 setShowForm(false)
               }}
+              onClose={() => setShowForm(false)}
               latitude={selectedLat}
               longitude={selectedLng}
             />
+
           </div>
         </div>
       )}
