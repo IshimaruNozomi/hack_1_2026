@@ -9,6 +9,7 @@ export default function ProfilePage({ user, setPage }) {
 
   // マウント状態を追跡してアンマウント後の setState を防ぐ
   const isMountedRef = useRef(true)
+  const isFetchingRef = useRef(false)
   const loadingTimeoutRef = useRef(null)
 
   const fetchProfile = useCallback(async () => {
@@ -17,14 +18,23 @@ export default function ProfilePage({ user, setPage }) {
       if (isMountedRef.current) setLoading(false)
       return
     }
+    if (isFetchingRef.current) {
+      console.debug('ProfilePage: fetchProfile already running - skip')
+      return
+    }
+    isFetchingRef.current = true
     console.log('ProfilePage: fetchProfile start', { user })
     try {
       // maybeSingle を使うとレコードが無くても error にならない
-      const { data, error } = await supabase
+      const selectPromise = supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .maybeSingle()
+      const { data, error } = await Promise.race([
+        selectPromise,
+        new Promise((_, rej) => setTimeout(() => rej(new Error('select timeout')), 7000))
+      ])
 
       if (error) {
         console.error('fetchProfile error', error)
@@ -39,11 +49,15 @@ export default function ProfilePage({ user, setPage }) {
         } else {
           // プロフィールが存在しない場合、自動で初期レコードを作成して表示する
           const defaultName = (user.email || '').split('@')[0] || null
-          const { data: inserted, error: insertErr } = await supabase
+          const insertPromise = supabase
             .from('profiles')
             .insert({ id: user.id, username: defaultName, bio: '' })
             .select()
             .maybeSingle()
+          const { data: inserted, error: insertErr } = await Promise.race([
+            insertPromise,
+            new Promise((_, rej) => setTimeout(() => rej(new Error('insert timeout')), 7000))
+          ])
 
           if (insertErr) {
             console.error('failed to insert default profile', insertErr)
@@ -60,10 +74,12 @@ export default function ProfilePage({ user, setPage }) {
     } catch (err) {
       console.error('fetchProfile failed', err)
       if (isMountedRef.current) {
+        setFetchError(err.message || String(err))
         // エラー時でも UI を停止させ、最低限の表示を行う
         setProfile({ username: user?.email || '未設定', bio: '' })
       }
     } finally {
+      isFetchingRef.current = false
       if (isMountedRef.current) setLoading(false)
     }
   }, [user])
