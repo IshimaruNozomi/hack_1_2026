@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 export default function ProfilePage({ user, setPage }) {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState(null)
   // 編集機能は不要なので削除。表示専用にする。
 
   // マウント状態を追跡してアンマウント後の setState を防ぐ
@@ -26,11 +27,13 @@ export default function ProfilePage({ user, setPage }) {
 
       if (error) {
         console.error('fetchProfile error', error)
+        if (isMountedRef.current) setFetchError(error.message || String(error))
       }
 
       if (isMountedRef.current) {
         if (data) {
           setProfile(data)
+          setFetchError(null)
           console.log('ProfilePage: fetched profile', { data })
         } else {
           // プロフィールが存在しない場合、自動で初期レコードを作成して表示する
@@ -43,10 +46,12 @@ export default function ProfilePage({ user, setPage }) {
 
           if (insertErr) {
             console.error('failed to insert default profile', insertErr)
-            // 作成に失敗しても空の profile を表示して読み込みを終える
+            setFetchError(insertErr.message || String(insertErr))
+            // 作成に失敗したら最低限表示できる値を入れておく
             setProfile({ username: defaultName, bio: '' })
           } else {
             setProfile(inserted || { username: defaultName, bio: '' })
+            setFetchError(null)
             console.log('ProfilePage: created default profile', { inserted })
           }
         }
@@ -78,6 +83,14 @@ export default function ProfilePage({ user, setPage }) {
   // ページ全体をローディングで置き換えず、まずはユーザー情報（email など）を先に表示する。
   const displayName = profile?.username || user?.email || '未設定'
 
+  const handleRefetch = async () => {
+    if (isMountedRef.current) {
+      setLoading(true)
+      setFetchError(null)
+      await fetchProfile()
+    }
+  }
+
   return (
     <div style={styles.container}>
       <h2>プロフィール</h2>
@@ -88,10 +101,18 @@ export default function ProfilePage({ user, setPage }) {
         <p><b>自己紹介：</b></p>
         <p>{loading && !profile ? '読み込み中...' : (profile?.bio || 'まだ登録されていません')}</p>
       </div>
+      <div style={{ marginTop: 12 }}>
+        <button onClick={() => setPage('main')}>戻る</button>
+        <button onClick={handleRefetch} style={{ marginLeft: 8 }}>再取得</button>
+      </div>
 
-      <button onClick={() => setPage('main')}>
-        戻る
-      </button>
+      {fetchError && (
+        <div style={{ marginTop: 12, padding: 10, border: '1px solid #f3c', background: '#fff0' }}>
+          <div><b>プロフィール取得エラー</b></div>
+          <div>{String(fetchError)}</div>
+          <div style={{ marginTop: 8 }}><button onClick={handleRefetch}>再取得</button></div>
+        </div>
+      )}
     </div>
   )
 }
