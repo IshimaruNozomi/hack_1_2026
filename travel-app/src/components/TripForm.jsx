@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import './TripForm.css'
 
 export default function TripForm({
   user,
@@ -18,7 +19,6 @@ export default function TripForm({
   const [satisfaction, setSatisfaction] = useState('')
   const [cost, setCost] = useState('')
 
-  // 地図クリック → フォームに反映
   useEffect(() => {
     if (latitude && longitude) {
       setLat(latitude)
@@ -50,12 +50,10 @@ export default function TripForm({
     setLoading(false)
 
     if (error) {
-      console.error('insert error:', error)
       alert('保存失敗')
     } else {
       alert('保存成功！')
 
-      // 入力リセット
       setTitle('')
       setDescription('')
       setDate('')
@@ -67,76 +65,79 @@ export default function TripForm({
   }
 
   return (
-    <div style={styles.container}>
-      <h2>旅を記録</h2>
+    <div className="trip-form">
+      <h2 className="form-title">旅を記録</h2>
 
       <input
+        className="form-input"
         placeholder="タイトル（例：京都旅行）"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
       />
 
-      <input
+      <textarea
+        className="form-textarea"
         placeholder="説明"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
       />
 
       <input
+        className="form-input"
         type="date"
         value={date}
         onChange={(e) => setDate(e.target.value)}
       />
 
       <input
+        className="form-input"
         value={lat}
         placeholder="緯度（地図クリックで自動入力）"
         readOnly
       />
 
       <input
+        className="form-input"
         value={lng}
         placeholder="経度（地図クリックで自動入力）"
         readOnly
       />
 
       <input
+        className="form-input"
         placeholder="天気（例：晴れ）"
         value={weather}
         onChange={(e) => setWeather(e.target.value)}
-        />
+      />
 
-        <input
+      <input
+        className="form-input"
         placeholder="メンバー"
         value={members}
         onChange={(e) => setMembers(e.target.value)}
-        />
+      />
 
-        <input
+      <input
+        className="form-input"
         placeholder="満足度（1〜5）"
         value={satisfaction}
         onChange={(e) => setSatisfaction(e.target.value)}
-        />
+      />
 
-        <input
+      <input
+        className="form-input"
         placeholder="費用（円）"
         value={cost}
         onChange={(e) => setCost(e.target.value)}
-        />
+      />
 
-      <button onClick={handleSubmit} disabled={loading}>
+      <button
+        className="form-button"
+        onClick={handleSubmit}
+        disabled={loading}
+      >
         {loading ? '保存中...' : '保存'}
       </button>
     </div>
   )
-}
-
-const styles = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-    padding: '10px',
-    borderBottom: '1px solid #ddd'
-  }
 }
