@@ -1,60 +1,33 @@
 import { useState } from 'react'
+import './Header.css'
 
 export default function Header({ onLogout, setPage }) {
   const [open, setOpen] = useState(false)
 
   return (
-    <div style={styles.header}>
-      <h1 style={styles.title}>trip_note</h1>
+    <div className="header">
+      <h1 className="header-title">trip_note</h1>
 
       {/* ハンバーガー */}
       <div
-        style={styles.menu}
+        className="header-menu"
         onClick={() => setOpen(!open)}
       >
         ☰
       </div>
 
-      {/* ドロップダウンメニュー */}
+      {/* ドロップダウン */}
       {open && (
-        <div style={styles.dropdown}>
-            <button onClick={() => setPage('profile')}>
+        <div className="header-dropdown">
+          <button onClick={() => setPage('profile')}>
             プロフィール
-            </button>
+          </button>
 
-            <button onClick={onLogout}>
+          <button onClick={onLogout}>
             ログアウト
-            </button>
+          </button>
         </div>
-        )}
+      )}
     </div>
   )
-}
-
-const styles = {
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '10px 20px',
-    borderBottom: '1px solid #ddd',
-    position: 'relative'
-  },
-  title: {
-    margin: 0
-  },
-  menu: {
-    fontSize: '24px',
-    cursor: 'pointer'
-  },
-  dropdown: {
-    position: 'absolute',
-    top: '50px',
-    right: '20px',
-    background: '#fff',
-    border: '1px solid #ddd',
-    borderRadius: '8px',
-    padding: '10px',
-    zIndex: 1000
-  }
 }
