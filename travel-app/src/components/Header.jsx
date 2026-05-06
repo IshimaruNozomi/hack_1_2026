@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export default function Header({ onLogout }) {
+export default function Header({ onLogout, setPage }) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -18,9 +18,15 @@ export default function Header({ onLogout }) {
       {/* ドロップダウンメニュー */}
       {open && (
         <div style={styles.dropdown}>
-          <button onClick={onLogout}>ログアウト</button>
+            <button onClick={() => setPage('profile')}>
+            プロフィール
+            </button>
+
+            <button onClick={onLogout}>
+            ログアウト
+            </button>
         </div>
-      )}
+        )}
     </div>
   )
 }

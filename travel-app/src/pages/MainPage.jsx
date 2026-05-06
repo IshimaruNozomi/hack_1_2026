@@ -6,7 +6,7 @@ import SelectMap from '../components/SelectMap'  // 登録用
 import TripList from '../components/TripList'
 import TripForm from '../components/TripForm'
 
-export default function MainPage({ user, onLogout }) {
+export default function MainPage({ user, onLogout, setPage }) {
   const [trips, setTrips] = useState([])
 
   // モーダル表示
@@ -43,7 +43,7 @@ export default function MainPage({ user, onLogout }) {
 
   return (
     <div>
-      <Header onLogout={onLogout} />
+      <Header onLogout={onLogout} setPage={setPage} />
       <div style={{ padding: '10px' }}>
       </div>
 

@@ -1,157 +1,174 @@
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import SelectMap from '../components/SelectMap'
 
 export default function ProfilePage({ user, setPage }) {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [fetchError, setFetchError] = useState(null)
-  // 編集機能は不要なので削除。表示専用にする。
 
-  // マウント状態を追跡してアンマウント後の setState を防ぐ
-  const isMountedRef = useRef(true)
-  const isFetchingRef = useRef(false)
-  const loadingTimeoutRef = useRef(null)
+  const [isEditOpen, setIsEditOpen] = useState(false)
 
-  const fetchProfile = useCallback(async () => {
-    if (!user || !user.id) {
-      // user 情報が無ければロードを解除して待つ
-      if (isMountedRef.current) setLoading(false)
-      return
-    }
-    if (isFetchingRef.current) {
-      console.debug('ProfilePage: fetchProfile already running - skip')
-      return
-    }
-    isFetchingRef.current = true
-    console.log('ProfilePage: fetchProfile start', { user })
-    try {
-      // maybeSingle を使うとレコードが無くても error にならない
-      const selectPromise = supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle()
-      const { data, error } = await Promise.race([
-        selectPromise,
-        new Promise((_, rej) => setTimeout(() => rej(new Error('select timeout')), 7000))
-      ])
+  const [form, setForm] = useState({
+    username: '',
+    bio: ''
+  })
 
-      if (error) {
-        console.error('fetchProfile error', error)
-        if (isMountedRef.current) setFetchError(error.message || String(error))
-      }
-
-      if (isMountedRef.current) {
-        if (data) {
-          setProfile(data)
-          setFetchError(null)
-          console.log('ProfilePage: fetched profile', { data })
-        } else {
-          // プロフィールが存在しない場合、自動で初期レコードを作成して表示する
-          const defaultName = (user.email || '').split('@')[0] || null
-          const insertPromise = supabase
-            .from('profiles')
-            .insert({ id: user.id, username: defaultName, bio: '' })
-            .select()
-            .maybeSingle()
-          const { data: inserted, error: insertErr } = await Promise.race([
-            insertPromise,
-            new Promise((_, rej) => setTimeout(() => rej(new Error('insert timeout')), 7000))
-          ])
-
-          if (insertErr) {
-            console.error('failed to insert default profile', insertErr)
-            setFetchError(insertErr.message || String(insertErr))
-            // 作成に失敗したら最低限表示できる値を入れておく
-            setProfile({ username: defaultName, bio: '' })
-          } else {
-            setProfile(inserted || { username: defaultName, bio: '' })
-            setFetchError(null)
-            console.log('ProfilePage: created default profile', { inserted })
-          }
-        }
-      }
-    } catch (err) {
-      console.error('fetchProfile failed', err)
-      if (isMountedRef.current) {
-        setFetchError(err.message || String(err))
-        // エラー時でも UI を停止させ、最低限の表示を行う
-        setProfile({ username: user?.email || '未設定', bio: '' })
-      }
-    } finally {
-      isFetchingRef.current = false
-      if (isMountedRef.current) setLoading(false)
-    }
-  }, [user])
+  const [location, setLocation] = useState({
+    name: '',
+    lat: null,
+    lng: null
+  })
 
   useEffect(() => {
-    // マウント時および user 変更時に取得
-  console.debug('ProfilePage: useEffect firing', { user })
-    ;(async () => {
-      await fetchProfile()
-    })()
+    fetchProfile()
+  }, [])
 
-    return () => {
-      isMountedRef.current = false
-    }
-  }, [fetchProfile, user])
+  const fetchProfile = async () => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single()
 
-  // safety: if loading stays true for too long, force it false so UI doesn't block forever
-  useEffect(() => {
-    if (loading) {
-      loadingTimeoutRef.current = setTimeout(() => {
-        if (isMountedRef.current) {
-          console.warn('ProfilePage: loading timeout, forcing loading=false')
-          setLoading(false)
-        }
-      }, 5000)
+    if (error) {
+      console.error(error)
     } else {
-      if (loadingTimeoutRef.current) {
-        clearTimeout(loadingTimeoutRef.current)
-        loadingTimeoutRef.current = null
-      }
+      setProfile(data)
+
+      setForm({
+        username: data.username || '',
+        bio: data.bio || ''
+      })
+
+      setLocation({
+        name: data.location_name || '',
+        lat: data.latitude || null,
+        lng: data.longitude || null
+      })
     }
 
-    return () => {
-      if (loadingTimeoutRef.current) {
-        clearTimeout(loadingTimeoutRef.current)
-        loadingTimeoutRef.current = null
-      }
-    }
-  }, [loading])
+    setLoading(false)
+  }
 
-  // 編集・保存機能は削除済み
-  // ページ全体をローディングで置き換えず、まずはユーザー情報（email など）を先に表示する。
-  const displayName = profile?.username || user?.email || '未設定'
+  const handleSave = async () => {
+    console.log("保存開始", form, location)
 
-  const handleRefetch = async () => {
-    if (isMountedRef.current) {
-      setLoading(true)
-      setFetchError(null)
-      await fetchProfile()
-    }
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({
+        username: form.username,
+        bio: form.bio,
+        location_name: location.name,
+        latitude: location.lat,
+        longitude: location.lng
+      })
+      .eq('id', user.id)
+      .select()
+
+    console.log("結果:", data)
+    console.log("エラー:", error)
+
+    if (error) return
+
+    setProfile(data[0])
+
+    await fetchProfile()
+    setIsEditOpen(false)
+  }
+
+  if (loading) return <div>Loading...</div>
+
+  if (!profile) {
+    return <div>プロフィールが見つかりません</div>
   }
 
   return (
     <div style={styles.container}>
       <h2>プロフィール</h2>
 
-      {/* プロフィール表示（読み取り専用） */}
+      {/* 表示 */}
       <div style={styles.card}>
-        <p><b>名前：</b> {loading && !profile ? '読み込み中...' : displayName}</p>
+        <p><b>名前：</b> {profile.username || '未設定'}</p>
         <p><b>自己紹介：</b></p>
-        <p>{loading && !profile ? '読み込み中...' : (profile?.bio || 'まだ登録されていません')}</p>
-      </div>
-      <div style={{ marginTop: 12 }}>
-        <button onClick={() => setPage('main')}>戻る</button>
-        <button onClick={handleRefetch} style={{ marginLeft: 8 }}>再取得</button>
+        <p>{profile.bio || 'まだ登録されていません'}</p>
+
+        <p><b>居住地：</b></p>
+        <p>{profile.location_name || '未設定'}</p>
+
+        <p>
+          緯度: {profile.latitude}<br />
+          経度: {profile.longitude}
+        </p>
       </div>
 
-      {fetchError && (
-        <div style={{ marginTop: 12, padding: 10, border: '1px solid #f3c', background: '#fff0' }}>
-          <div><b>プロフィール取得エラー</b></div>
-          <div>{String(fetchError)}</div>
-          <div style={{ marginTop: 8 }}><button onClick={handleRefetch}>再取得</button></div>
+      <button onClick={() => setIsEditOpen(true)}>
+        編集する
+      </button>
+
+      <button onClick={() => setPage('main')}>
+        戻る
+      </button>
+
+      {/* モーダル */}
+      {isEditOpen && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modal}>
+            <h3>プロフィール編集</h3>
+
+            <input
+              value={form.username}
+              onChange={(e) =>
+                setForm({ ...form, username: e.target.value })
+              }
+              placeholder="名前"
+              style={styles.input}
+            />
+
+            <textarea
+              value={form.bio}
+              onChange={(e) =>
+                setForm({ ...form, bio: e.target.value })
+              }
+              placeholder="自己紹介"
+              style={styles.textarea}
+            />
+
+            <h4>居住地</h4>
+
+            <input
+              value={location.name}
+              onChange={(e) =>
+                setLocation({ ...location, name: e.target.value })
+              }
+              placeholder="場所名"
+              style={styles.input}
+            />
+
+            <SelectMap
+              onSelect={(lat, lng) =>
+                setLocation((prev) => ({
+                  ...prev,
+                  lat,
+                  lng
+                }))
+              }
+            />
+
+            <p>
+              緯度: {location.lat}<br />
+              経度: {location.lng}
+            </p>
+
+            <div style={styles.buttonRow}>
+              <button onClick={handleSave}>
+                保存
+              </button>
+
+              <button onClick={() => setIsEditOpen(false)}>
+                キャンセル
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -186,7 +203,9 @@ const styles = {
     background: '#fff',
     padding: '20px',
     borderRadius: '10px',
-    width: '320px'
+    width: '350px',
+    maxHeight: '90vh',
+    overflowY: 'auto'
   },
 
   input: {
@@ -197,13 +216,14 @@ const styles = {
 
   textarea: {
     width: '100%',
-    height: '100px',
-    padding: '8px',
-    marginBottom: '10px'
+    height: '80px',
+    marginBottom: '10px',
+    padding: '8px'
   },
 
   buttonRow: {
     display: 'flex',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    marginTop: '10px'
   }
 }
