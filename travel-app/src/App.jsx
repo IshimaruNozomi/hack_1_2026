@@ -61,11 +61,22 @@ function App() {
   // ユーザー取得処理（再利用のため名前を付ける）
   const fetchUser = async () => {
     try {
-      const { data, error } = await supabase.auth.getUser()
+      // Use getSession to check for an existing session. getUser throws
+      // AuthSessionMissingError when no session exists which is noisy.
+      const { data, error } = await supabase.auth.getSession()
+
       if (error) {
-        console.error('getUser error:', error)
+        // If there's an error that's not 'AuthSessionMissingError', log it.
+        console.error('getSession error:', error)
       }
-      setUser(data?.user ?? null)
+
+      const session = data?.session ?? null
+      if (!session) {
+        // no session -> not logged in
+        setUser(null)
+      } else {
+        setUser(session.user ?? null)
+      }
     } catch (err) {
       console.error('fetchUser failed', err)
       setUser(null)
