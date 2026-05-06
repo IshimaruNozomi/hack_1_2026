@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import SelectMap from '../components/SelectMap'
+import './ProfilePage.css'
 
 export default function ProfilePage({ user, setPage }) {
   const [profile, setProfile] = useState(null)
@@ -83,11 +84,11 @@ export default function ProfilePage({ user, setPage }) {
   }
 
   return (
-    <div style={styles.container}>
+    <div className="profile-container">
       <h2>プロフィール</h2>
 
       {/* 表示 */}
-      <div style={styles.card}>
+      <div className="profile-card">
         <p><b>名前：</b> {profile.username || '未設定'}</p>
         <p><b>自己紹介：</b></p>
         <p>{profile.bio || 'まだ登録されていません'}</p>
@@ -101,18 +102,18 @@ export default function ProfilePage({ user, setPage }) {
         </p>
       </div>
 
-      <button onClick={() => setIsEditOpen(true)}>
+      <button className="profile-btn profile-btn-primary"　onClick={() => setIsEditOpen(true)}>
         編集する
       </button>
 
-      <button onClick={() => setPage('main')}>
+      <button className="profile-btn profile-btn-secondary" onClick={() => setPage('main')}>
         戻る
       </button>
 
       {/* モーダル */}
       {isEditOpen && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modal}>
+        <div className="profile-modal-overlay">
+          <div className="profile-modal">
             <h3>プロフィール編集</h3>
 
             <input
@@ -121,7 +122,7 @@ export default function ProfilePage({ user, setPage }) {
                 setForm({ ...form, username: e.target.value })
               }
               placeholder="名前"
-              style={styles.input}
+              className="profile-input"
             />
 
             <textarea
@@ -130,7 +131,7 @@ export default function ProfilePage({ user, setPage }) {
                 setForm({ ...form, bio: e.target.value })
               }
               placeholder="自己紹介"
-              style={styles.textarea}
+              className="profile-textarea"
             />
 
             <h4>居住地</h4>
@@ -141,7 +142,7 @@ export default function ProfilePage({ user, setPage }) {
                 setLocation({ ...location, name: e.target.value })
               }
               placeholder="場所名"
-              style={styles.input}
+              className="profile-input"
             />
 
             <SelectMap
@@ -159,12 +160,12 @@ export default function ProfilePage({ user, setPage }) {
               経度: {location.lng}
             </p>
 
-            <div style={styles.buttonRow}>
-              <button onClick={handleSave}>
+            <div className="profile-btn">
+              <button className="profile-btn profile-btn-primary" onClick={handleSave}>
                 保存
               </button>
 
-              <button onClick={() => setIsEditOpen(false)}>
+              <button className="profile-btn profile-btn-secondary" onClick={() => setIsEditOpen(false)}>
                 キャンセル
               </button>
             </div>
@@ -175,55 +176,3 @@ export default function ProfilePage({ user, setPage }) {
   )
 }
 
-const styles = {
-  container: {
-    padding: '20px'
-  },
-
-  card: {
-    border: '1px solid #ddd',
-    padding: '15px',
-    borderRadius: '10px',
-    marginBottom: '20px'
-  },
-
-  modalOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-
-  modal: {
-    background: '#fff',
-    padding: '20px',
-    borderRadius: '10px',
-    width: '350px',
-    maxHeight: '90vh',
-    overflowY: 'auto'
-  },
-
-  input: {
-    width: '100%',
-    marginBottom: '10px',
-    padding: '8px'
-  },
-
-  textarea: {
-    width: '100%',
-    height: '80px',
-    marginBottom: '10px',
-    padding: '8px'
-  },
-
-  buttonRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginTop: '10px'
-  }
-}
