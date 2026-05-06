@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import SelectMap from '../components/SelectMap'
 import './TripForm.css'
 
 export default function TripForm({
   user,
   onSaved,
+  onClose,
   latitude,
   longitude
 }) {
@@ -18,6 +20,7 @@ export default function TripForm({
   const [members, setMembers] = useState('')
   const [satisfaction, setSatisfaction] = useState('')
   const [cost, setCost] = useState('')
+  
 
   useEffect(() => {
     if (latitude && longitude) {
@@ -67,6 +70,13 @@ export default function TripForm({
   return (
     <div className="trip-form">
       <h2 className="form-title">旅を記録</h2>
+      <button
+        type="button"
+        onClick={onClose}
+        className="form-close"
+      >
+        閉じる
+      </button>
 
       <input
         className="form-input"
