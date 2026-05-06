@@ -76,9 +76,7 @@ export default function MainPage({ user, onLogout, setPage }) {
               latitude={selectedLat}
               longitude={selectedLng}
             />
-            
 
-            <SelectMap onMapClick={handleMapClick} />
           </div>
         </div>
       )}
