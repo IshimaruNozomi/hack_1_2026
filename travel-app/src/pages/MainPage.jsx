@@ -7,7 +7,7 @@ import TripList from '../components/TripList'
 import TripForm from '../components/TripForm'
 import './MainPage.css'
 
-export default function MainPage({ user, onLogout }) {
+export default function MainPage({ user, onLogout, setPage }) {
   const [trips, setTrips] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [selectedLat, setSelectedLat] = useState('')
@@ -37,10 +37,12 @@ export default function MainPage({ user, onLogout }) {
   }
 
   return (
-    <div className="main-page">
-      <Header onLogout={onLogout} />
 
-      <div className="content"></div>
+    <div>
+      <Header onLogout={onLogout} setPage={setPage} />
+      <div style={{ padding: '10px' }}>
+      </div>
+
 
       {/* ＋ボタン */}
       <button
