@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import SelectMap from '../components/SelectMap'
 import './TripForm.css'
@@ -10,24 +10,20 @@ export default function TripForm({
   latitude,
   longitude
 }) {
+
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [date, setDate] = useState('')
+
   const [lat, setLat] = useState('')
   const [lng, setLng] = useState('')
+
   const [loading, setLoading] = useState(false)
   const [weather, setWeather] = useState('')
   const [members, setMembers] = useState('')
   const [satisfaction, setSatisfaction] = useState('')
   const [cost, setCost] = useState('')
   
-
-  useEffect(() => {
-    if (latitude && longitude) {
-      setLat(latitude)
-      setLng(longitude)
-    }
-  }, [latitude, longitude])
 
   const handleSubmit = async () => {
     if (!title || !lat || !lng) {
@@ -53,18 +49,24 @@ export default function TripForm({
     setLoading(false)
 
     if (error) {
+      console.error(error)
       alert('保存失敗')
-    } else {
-      alert('保存成功！')
-
-      setTitle('')
-      setDescription('')
-      setDate('')
-      setLat('')
-      setLng('')
-
-      onSaved()
+      return
     }
+
+    alert('保存成功！')
+
+    setTitle('')
+    setDescription('')
+    setDate('')
+    setLat('')
+    setLng('')
+    setWeather('')
+    setMembers('')
+    setSatisfaction('')
+    setCost('')
+
+    onSaved()
   }
 
   return (
@@ -78,6 +80,7 @@ export default function TripForm({
         閉じる
       </button>
 
+      {/* 入力群 */}
       <input
         className="form-input"
         placeholder="タイトル（例：京都旅行）"
@@ -99,23 +102,36 @@ export default function TripForm({
         onChange={(e) => setDate(e.target.value)}
       />
 
+      {/* 🗺️ 地図（ここに1回だけ） */}
+      <div className="map-section">
+        <SelectMap
+          mode="select"
+          onSelect={(lat, lng) => {
+            setLat(lat)
+            setLng(lng)
+          }}
+        />
+      </div>
+
+      {/* 緯度経度 */}
       <input
         className="form-input"
         value={lat}
-        placeholder="緯度（地図クリックで自動入力）"
+        placeholder="緯度"
         readOnly
       />
 
       <input
         className="form-input"
         value={lng}
-        placeholder="経度（地図クリックで自動入力）"
+        placeholder="経度"
         readOnly
       />
 
+      {/* その他 */}
       <input
         className="form-input"
-        placeholder="天気（例：晴れ）"
+        placeholder="天気"
         value={weather}
         onChange={(e) => setWeather(e.target.value)}
       />
@@ -129,18 +145,19 @@ export default function TripForm({
 
       <input
         className="form-input"
-        placeholder="満足度（1〜5）"
+        placeholder="満足度"
         value={satisfaction}
         onChange={(e) => setSatisfaction(e.target.value)}
       />
 
       <input
         className="form-input"
-        placeholder="費用（円）"
+        placeholder="費用"
         value={cost}
         onChange={(e) => setCost(e.target.value)}
       />
 
+      {/* ボタン（最後） */}
       <button
         className="form-button"
         onClick={handleSubmit}
