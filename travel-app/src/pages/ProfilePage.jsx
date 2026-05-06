@@ -12,17 +12,22 @@ export default function ProfilePage({ user, setPage }) {
     bio: ''
   })
   const [saving, setSaving] = useState(false)
+  const [fetchAttempts, setFetchAttempts] = useState(0)
+  const [lastError, setLastError] = useState(null)
+  const [lastData, setLastData] = useState(null)
 
   // マウント状態を追跡してアンマウント後の setState を防ぐ
   const isMountedRef = useRef(true)
 
   const fetchProfile = useCallback(async () => {
+    setFetchAttempts((n) => n + 1)
     if (!user || !user.id) {
       // user 情報が無ければロードを解除して待つ
+      setLastError('no-user')
       if (isMountedRef.current) setLoading(false)
       return
     }
-    console.debug('ProfilePage: fetchProfile start', { user })
+    console.log('ProfilePage: fetchProfile start', { user })
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -32,18 +37,22 @@ export default function ProfilePage({ user, setPage }) {
 
       if (error) {
         console.error('fetchProfile error', error)
+        setLastError(error.message || String(error))
       } else if (isMountedRef.current) {
         setProfile(data)
-        console.debug('ProfilePage: fetched profile', { data })
+        setLastData(data)
+        console.log('ProfilePage: fetched profile', { data })
 
         // フォーム初期化
         setForm({
           username: data?.username || '',
           bio: data?.bio || ''
         })
+        setLastError(null)
       }
     } catch (err) {
       console.error('fetchProfile failed', err)
+      setLastError(String(err))
     } finally {
       if (isMountedRef.current) setLoading(false)
     }
@@ -105,7 +114,22 @@ export default function ProfilePage({ user, setPage }) {
     }
   }
 
-  if (loading) return <div>Loading...</div>
+  if (loading)
+    return (
+      <div>
+        <div>Loading...</div>
+        <div style={{ marginTop: 12, padding: 8, border: '1px solid #eee', background: '#fafafa' }}>
+          <div><b>Debug (ProfilePage)</b></div>
+          <div>user: {user ? (user.email || user.id) : 'null'}</div>
+          <div>fetchAttempts: {fetchAttempts}</div>
+          <div>lastError: {lastError ? String(lastError) : 'none'}</div>
+          <div>lastData: {lastData ? JSON.stringify(lastData) : 'none'}</div>
+          <div style={{ marginTop: 6 }}>
+            <button onClick={() => fetchProfile()}>再取得</button>
+          </div>
+        </div>
+      </div>
+    )
 
   if (!profile) {
     return <div>プロフィールが見つかりません</div>
