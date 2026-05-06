@@ -9,6 +9,7 @@ export default function ProfilePage({ user, setPage }) {
 
   // マウント状態を追跡してアンマウント後の setState を防ぐ
   const isMountedRef = useRef(true)
+  const loadingTimeoutRef = useRef(null)
 
   const fetchProfile = useCallback(async () => {
     if (!user || !user.id) {
@@ -78,6 +79,30 @@ export default function ProfilePage({ user, setPage }) {
       isMountedRef.current = false
     }
   }, [fetchProfile, user])
+
+  // safety: if loading stays true for too long, force it false so UI doesn't block forever
+  useEffect(() => {
+    if (loading) {
+      loadingTimeoutRef.current = setTimeout(() => {
+        if (isMountedRef.current) {
+          console.warn('ProfilePage: loading timeout, forcing loading=false')
+          setLoading(false)
+        }
+      }, 5000)
+    } else {
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current)
+        loadingTimeoutRef.current = null
+      }
+    }
+
+    return () => {
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current)
+        loadingTimeoutRef.current = null
+      }
+    }
+  }, [loading])
 
   // 編集・保存機能は削除済み
   // ページ全体をローディングで置き換えず、まずはユーザー情報（email など）を先に表示する。
