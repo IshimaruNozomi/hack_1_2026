@@ -118,3 +118,9 @@
   color: #666;
   margin-top: 6px;
 }
+
+body.dark .profile-card {
+  background: #1f2937;
+  color: white;
+  border-color: #374151;
+}

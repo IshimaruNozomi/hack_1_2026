@@ -8,6 +8,9 @@ import TripForm from '../components/TripForm'
 
 import './MainPage.css'
 
+<<<<<<< fuka
+export default function MainPage({ user, onLogout, setPage,darkMode,setDarkMode }) {
+=======
 /* =========================
    ベクトル生成
 ========================= */
@@ -78,6 +81,7 @@ export default function MainPage({
      state
   ========================= */
 
+>>>>>>> main
   const [trips, setTrips] = useState([])
 
   const [profile, setProfile] =
@@ -271,6 +275,15 @@ export default function MainPage({
 
   return (
     <div>
+<<<<<<< fuka
+      <Header
+        onLogout={onLogout}
+        setPage={setPage}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+      />
+=======
+>>>>>>> main
 
       {/* =========================
           Header

@@ -3,6 +3,7 @@ import { supabase } from './lib/supabase'
 import Login from './Login'
 import MainPage from './pages/MainPage'
 import ProfilePage from './pages/ProfilePage'
+import './App.css'
 
 // DebugPanel removed — production-ready app should not show in-page debug overlay
 
@@ -11,6 +12,16 @@ function App() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState('main') // ← 画面管理
+  //ダークモード
+  const [darkMode, setDarkMode] = useState(false)
+
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add('dark')
+    } else {
+      document.body.classList.remove('dark')
+    }
+  }, [darkMode])
 
   // 初回ログイン状態チェック
   // ユーザー取得処理（再利用のため名前を付ける）
@@ -101,6 +112,8 @@ function App() {
         user={user}
         onLogout={handleLogout}
         setPage={setPage}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
       />
     </>
   )
