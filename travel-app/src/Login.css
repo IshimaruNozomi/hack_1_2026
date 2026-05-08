@@ -1,0 +1,78 @@
+/* ===== 全体背景 ===== */
+.login-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: linear-gradient(135deg, #8ee1f8);
+}
+
+/* ===== カード ===== */
+.login-card {
+  background: white;
+  padding: 32px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 350px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+/* タイトル */
+.login-title {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+/* 入力欄 */
+.login-input {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+
+  transition: 0.2s;
+}
+
+/* フォーカス */
+.login-input:focus {
+  border-color: #4facfe;
+  box-shadow: 0 0 0 2px rgba(79,172,254,0.2);
+  outline: none;
+}
+
+/* ログインボタン */
+.login-btn {
+  background: linear-gradient(135deg, #4facfe, #00c6ff);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 15px;
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.login-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+/* 新規登録 */
+.signup-btn {
+  background: none;
+  border: none;
+  color: #4facfe;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.signup-btn:hover {
+  text-decoration: underline;
+}

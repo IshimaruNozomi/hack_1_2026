@@ -18,6 +18,7 @@ export default function TripForm({ user, onSaved }) {
   const [members, setMembers] = useState('')
   const [satisfaction, setSatisfaction] = useState('')
   const [cost, setCost] = useState('')
+  
 
   const handleSubmit = async () => {
 
@@ -94,6 +95,15 @@ export default function TripForm({ user, onSaved }) {
 
   return (
     <div className="trip-form">
+
+      <h2 className="form-title">旅を記録</h2>
+      <button
+        type="button"
+        onClick={onClose}
+        className="form-close"
+      >
+        閉じる
+      </button>
 
       <h2 className="form-title">
         旅を記録
