@@ -92,3 +92,8 @@
 .trip-list {
   margin: 16px;
 }
+
+body.dark .profile-card {
+  background: #1f2937;
+  color: white;
+}

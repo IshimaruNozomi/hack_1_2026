@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import './Header.css'
 
-export default function Header({ onLogout, setPage }) {
+export default function Header({ onLogout, setPage, darkMode,setDarkMode }) {
   const [open, setOpen] = useState(false)
 
   return (
     <div className="header">
-      <h1 className="header-title">trip_note</h1>
+      <h1 className="header-title">てのひら列島</h1>
 
       {/* ハンバーガー */}
       <div
@@ -21,6 +21,10 @@ export default function Header({ onLogout, setPage }) {
         <div className="header-dropdown">
           <button onClick={() => setPage('profile')}>
             プロフィール
+          </button>
+
+          <button onClick={() => setDarkMode(!darkMode)}>
+            {darkMode ? 'ライトモード' : 'ダークモード'}
           </button>
 
           <button onClick={onLogout}>

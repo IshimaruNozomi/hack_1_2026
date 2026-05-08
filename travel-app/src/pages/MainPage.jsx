@@ -6,7 +6,7 @@ import TripList from '../components/TripList'
 import TripForm from '../components/TripForm'
 import './MainPage.css'
 
-export default function MainPage({ user, onLogout, setPage }) {
+export default function MainPage({ user, onLogout, setPage,darkMode,setDarkMode }) {
   const [trips, setTrips] = useState([])
   const [profile, setProfile] = useState(null)
 
@@ -53,7 +53,12 @@ export default function MainPage({ user, onLogout, setPage }) {
 
   return (
     <div>
-      <Header onLogout={onLogout} setPage={setPage} />
+      <Header
+        onLogout={onLogout}
+        setPage={setPage}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+      />
 
       {/* ＋ボタン */}
       <button

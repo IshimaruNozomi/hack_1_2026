@@ -102,3 +102,14 @@
 .form-close:hover {
   background: #d1d5db;
 }
+
+body.dark .trip-form {
+  color: white;
+}
+
+body.dark .form-input,
+body.dark .form-textarea {
+  background: #1f2937;
+  color: white;
+  border-color: #374151;
+}
