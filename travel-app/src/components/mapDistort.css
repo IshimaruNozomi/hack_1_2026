@@ -1,0 +1,37 @@
+.map-distort-wrapper {
+  width: 100%;
+  height: 300px;
+  margin: 10px;
+  overflow: hidden;
+
+  transform: perspective(600px)
+    rotateX(18deg)
+    rotateZ(-6deg)
+    scale(1.08)
+    skewX(12deg)
+    skewY(-6deg);
+
+  filter: contrast(1.4) saturate(1.8) brightness(1.1);
+
+  animation: warp 2.5s infinite alternate ease-in-out;
+}
+
+@keyframes warp {
+  0% {
+    transform: perspective(600px)
+      rotateX(12deg)
+      rotateZ(-4deg)
+      scale(1.05)
+      skewX(6deg)
+      skewY(-3deg);
+  }
+
+  100% {
+    transform: perspective(600px)
+      rotateX(22deg)
+      rotateZ(-10deg)
+      scale(1.12)
+      skewX(18deg)
+      skewY(-10deg);
+  }
+}
