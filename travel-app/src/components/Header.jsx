@@ -6,7 +6,7 @@ export default function Header({ onLogout, setPage }) {
 
   return (
     <div className="header">
-      <h1 className="header-title">trip_note</h1>
+      <h1 className="header-title">てのひら列島</h1>
 
       {/* ハンバーガー */}
       <div
