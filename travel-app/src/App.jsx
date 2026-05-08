@@ -4,55 +4,10 @@ import Login from './Login'
 import MainPage from './pages/MainPage'
 import ProfilePage from './pages/ProfilePage'
 
-function DebugPanel({ user, debugMsgs }) {
-  return (
-    <div style={{ position: 'fixed', right: 10, bottom: 10, zIndex: 9999, width: 360, maxHeight: 300, overflow: 'auto', background: 'rgba(0,0,0,0.8)', color: '#fff', padding: 8, borderRadius: 6, fontSize: 12 }}>
-      <div style={{ marginBottom: 6 }}><b>Debug</b> user: {user ? user.email || user.id : 'null'}</div>
-      <div style={{ maxHeight: 220, overflow: 'auto' }}>
-        {debugMsgs.slice().reverse().map((m, i) => (
-          <div key={i} style={{ color: m.level === 'error' ? '#ff6b6b' : m.level === 'warn' ? '#ffb86b' : '#ddd', marginBottom: 4 }}>[{m.ts}] {m.text}</div>
-        ))}
-      </div>
-    </div>
-  )
-}
+// DebugPanel removed — production-ready app should not show in-page debug overlay
 
 function App() {
-  // simple in-page debug messages
-  const [debugMsgs, setDebugMsgs] = useState([])
-  useEffect(() => {
-    if (!window.__DEBUG_MESSAGES) window.__DEBUG_MESSAGES = []
-    const push = (level, args) => {
-      const text = args.map((a) => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ')
-      window.__DEBUG_MESSAGES.push({ level, text, ts: new Date().toLocaleTimeString() })
-      // keep only last 50
-      if (window.__DEBUG_MESSAGES.length > 50) window.__DEBUG_MESSAGES.shift()
-      setDebugMsgs([...window.__DEBUG_MESSAGES])
-    }
-
-    const origLog = console.log
-    const origWarn = console.warn
-    const origErr = console.error
-
-    console.log = (...args) => {
-      origLog(...args)
-      push('log', args)
-    }
-    console.warn = (...args) => {
-      origWarn(...args)
-      push('warn', args)
-    }
-    console.error = (...args) => {
-      origErr(...args)
-      push('error', args)
-    }
-
-    return () => {
-      console.log = origLog
-      console.warn = origWarn
-      console.error = origErr
-    }
-  }, [])
+  // debug overlay removed
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState('main') // ← 画面管理
@@ -123,7 +78,6 @@ function App() {
     return (
       <>
         <Login onLogin={fetchUser} />
-        <DebugPanel user={user} debugMsgs={debugMsgs} />
       </>
     )
   }
@@ -136,7 +90,6 @@ function App() {
           user={user}
           setPage={setPage}
         />
-        <DebugPanel user={user} debugMsgs={debugMsgs} />
       </>
     )
   }
@@ -149,7 +102,6 @@ function App() {
         onLogout={handleLogout}
         setPage={setPage}
       />
-      <DebugPanel user={user} debugMsgs={debugMsgs} />
     </>
   )
   
