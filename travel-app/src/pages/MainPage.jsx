@@ -9,6 +9,7 @@ import './MainPage.css'
 /* =========================
    ベクトル生成
 ========================= */
+
 function buildVector(trips) {
   const SEG = 36
 
@@ -137,16 +138,34 @@ export default function MainPage({
   ========================= */
 
   const fetchSimilarUsers = async () => {
-    const { data: allTrips, error } = await supabase
-      .from('trips')
-      .select('*')
 
-    if (error || !allTrips) {
-      console.error(error)
+    // 全trip取得
+    const { data: allTrips, error: tripError } =
+      await supabase
+        .from('trips')
+        .select('*')
+
+    if (tripError || !allTrips) {
+      console.error(tripError)
       return
     }
 
-    // user_idごとに整理
+    // 全profile取得
+    const {
+      data: profiles,
+      error: profileError
+    } = await supabase
+      .from('profiles')
+      .select('*')
+
+    if (profileError || !profiles) {
+      console.error(profileError)
+      return
+    }
+
+    console.log(profiles)
+
+    // user_idごと整理
     const userMap = {}
 
     allTrips.forEach((trip) => {
@@ -157,30 +176,61 @@ export default function MainPage({
       userMap[trip.user_id].push(trip)
     })
 
-    // 自分のベクトル
+    // 自分ベクトル
     const myVector = buildVector(trips)
 
     const results = []
 
-    Object.entries(userMap).forEach(([uid, userTrips]) => {
-      // 自分除外
-      if (uid === user.id) return
+    Object.entries(userMap).forEach(
+      ([uid, userTrips]) => {
 
-      const vec = buildVector(userTrips)
+        // 自分除外
+        if (uid === user.id) return
 
-      const similarity =
-        cosineSimilarity(myVector, vec)
+        // 相手ベクトル
+        const vec = buildVector(userTrips)
 
-      results.push({
-        user_id: uid,
-        similarity
-      })
-    })
+        // 類似度
+        const similarity =
+          cosineSimilarity(myVector, vec)
+
+        // profile検索
+        const profile =
+          profiles.find(
+            (p) =>
+              String(p.id) === String(uid)
+          )
+
+        console.log(uid)
+        console.log(profile)
+
+        // 満足度最大のtripを1件だけ
+        const topTrips =
+          [...userTrips]
+            .sort(
+              (a, b) =>
+                (b.satisfaction || 0) -
+                (a.satisfaction || 0)
+            )
+            .slice(0, 1)
+
+        results.push({
+          user_id: uid,
+          username:
+            profile?.username ||
+            '未設定',
+          similarity,
+          topTrips
+        })
+      }
+    )
 
     // 類似度順
     results.sort(
       (a, b) => b.similarity - a.similarity
     )
+
+    console.log(results)
 
     setSimilarUsers(results.slice(0, 5))
   }
@@ -258,7 +308,7 @@ export default function MainPage({
         }}
       >
         <h3>
-          似た旅スタイルのユーザー
+          類似ユーザー
         </h3>
 
         {similarUsers.length === 0 && (
@@ -271,21 +321,81 @@ export default function MainPage({
           <div
             key={u.user_id}
             style={{
-              marginBottom: '10px',
-              padding: '10px',
+              marginBottom: '20px',
+              padding: '15px',
               border: '1px solid #ccc',
               borderRadius: '10px'
             }}
           >
-            <div>
-              ユーザーID:
-              {u.user_id}
-            </div>
+
+            <h4>
+              {u.username}
+            </h4>
 
             <div>
-              類似度:
+              類似度：
               {(u.similarity * 100).toFixed(1)}%
             </div>
+
+            <div
+              style={{
+                marginTop: '10px'
+              }}
+            >
+              <b>
+                おすすめ旅先
+              </b>
+            </div>
+
+            {u.topTrips.map((trip) => (
+              <div
+                key={trip.id}
+                style={{
+                  marginTop: '10px',
+                  padding: '10px',
+                  background: '#f5f5f5',
+                  borderRadius: '8px'
+                }}
+              >
+
+                <div>
+                  タイトル：
+                  {trip.title}
+                </div>
+
+                <div>
+                  日付：
+                  {trip.trip_date || '未設定'}
+                </div>
+
+                <div>
+                  天気：
+                  {trip.weather || '未設定'}
+                </div>
+
+                <div>
+                  満足度：
+                  {trip.satisfaction || '-'}
+                </div>
+
+                <div>
+                  費用：
+                  {trip.cost || '-'}円
+                </div>
+
+                <div>
+                  緯度：
+                  {trip.latitude}
+                </div>
+
+                <div>
+                  経度：
+                  {trip.longitude}
+                </div>
+
+              </div>
+            ))}
+
           </div>
         ))}
       </div>
