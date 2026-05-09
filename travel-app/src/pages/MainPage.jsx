@@ -167,14 +167,9 @@ export default function MainPage({
         )
 
     if (error) {
-
       console.error(error)
       return
-
     }
-
-    console.log('fetched trips', data)
-
     setTrips(data || [])
   }
 
@@ -410,10 +405,6 @@ export default function MainPage({
 
               onSaved={async () => {
 
-                console.log(
-                  'editing saved'
-                )
-
                 await fetchTrips()
 
                 setEditingTrip(null)
@@ -557,12 +548,6 @@ export default function MainPage({
           <TripList
             trips={trips}
             onEdit={(trip) => {
-
-              console.log(
-                'edit clicked',
-                trip
-              )
-
               setShowForm(false)
 
               setEditingTrip({

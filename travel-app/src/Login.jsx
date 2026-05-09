@@ -9,7 +9,6 @@ export default function Login({ onLogin }) {
   const [infoMsg, setInfoMsg] = useState('')
 
   const handleLogin = async () => {
-    console.log('Login: button clicked', { email })
     setErrorMsg('')
     setInfoMsg('サインイン中...')
     try {
@@ -17,14 +16,12 @@ export default function Login({ onLogin }) {
         email,
         password
       })
-      console.log('Login: signInWithPassword result', res)
 
       if (res.error) {
         setErrorMsg(res.error.message)
         setInfoMsg('')
       } else {
         setInfoMsg('ログイン成功')
-        console.log('Login: login success, calling onLogin')
         if (typeof onLogin === 'function') onLogin()
       }
     } catch (err) {
@@ -42,7 +39,6 @@ export default function Login({ onLogin }) {
         email,
         password
       })
-      console.log('Login: signUp result', res)
       if (res.error) {
         setErrorMsg(res.error.message)
         setInfoMsg('')
