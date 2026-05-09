@@ -52,8 +52,6 @@ export default function TripList({
 
           const filePath = url.split(splitTarget)[1]
 
-          console.log('削除ファイルパス', filePath)
-
           const { error: storageError } = await supabase.storage
             .from('trip-images')
             .remove([filePath])

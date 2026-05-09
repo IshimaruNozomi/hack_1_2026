@@ -177,11 +177,6 @@ export default function TripForm({
         uploadedImageUrl =
           data.publicUrl
 
-        console.log(
-          'new image url',
-          uploadedImageUrl
-        )
-
       } catch (e) {
 
         console.error(e)
@@ -241,11 +236,6 @@ export default function TripForm({
       image_url:
         uploadedImageUrl
     }
-
-    console.log(
-      'payload',
-      payload
-    )
 
     /* =========================
         編集
