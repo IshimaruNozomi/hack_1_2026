@@ -239,13 +239,6 @@ export default function MainPage({
   return (
     <div>
 
-      <Header
-        onLogout={onLogout}
-        setPage={setPage}
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
-      />
-
       {/* =========================
           Header
       ========================= */}
@@ -253,6 +246,8 @@ export default function MainPage({
       <Header
         onLogout={onLogout}
         setPage={setPage}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
       />
 
       {/* =========================
