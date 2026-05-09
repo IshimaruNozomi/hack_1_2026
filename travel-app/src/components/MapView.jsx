@@ -121,9 +121,9 @@ export default function MapView({ trips = [], profile = null }) {
 
   return (
     <MapContainer
+      className="map-container"
       center={home || [36.2048, 138.2529]}
-      zoom={5}
-      style={{ height: '300px', margin: '10px' }}
+      zoom={4}
     >
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
