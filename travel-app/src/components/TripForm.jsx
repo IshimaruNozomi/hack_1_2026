@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import SelectMap from '../components/SelectMap'
 
@@ -10,46 +10,50 @@ export default function TripForm({
   onClose,
   editTrip
 }) {
-
   /* =========================
-      state
+      state (single form object)
   ========================= */
 
-  const [title, setTitle] =
-    useState(editTrip?.title || '')
+  const [form, setForm] = useState(() => ({
+    title: editTrip?.title || '',
+    description: editTrip?.description || '',
+    trip_date: editTrip?.trip_date
+      ? editTrip.trip_date.replaceAll('/', '-')
+      : '',
+    latitude: editTrip?.latitude || '',
+    longitude: editTrip?.longitude || '',
+    weather: editTrip?.weather || '',
+    members: editTrip?.members || '',
+    satisfaction: String(editTrip?.satisfaction || ''),
+    cost: String(editTrip?.cost || '')
+  }))
 
-  const [description, setDescription] =
-    useState(editTrip?.description || '')
+  const [loading, setLoading] = useState(false)
 
-  const [date, setDate] =
-    useState(
-      editTrip?.trip_date
+  /* =========================
+      編集データ反映 — 一度に setForm
+  ========================= */
+
+  useEffect(() => {
+    if (!editTrip) return
+
+    // schedule setForm asynchronously to avoid synchronous setState in effect
+    setTimeout(() => {
+      setForm({
+      title: editTrip.title || '',
+      description: editTrip.description || '',
+      trip_date: editTrip.trip_date
         ? editTrip.trip_date.replaceAll('/', '-')
-        : ''
-    )
-
-  const [lat, setLat] =
-    useState(editTrip?.latitude || '')
-
-  const [lng, setLng] =
-    useState(editTrip?.longitude || '')
-
-  const [loading, setLoading] =
-    useState(false)
-
-  const [weather, setWeather] =
-    useState(editTrip?.weather || '')
-
-  const [members, setMembers] =
-    useState(editTrip?.members || '')
-
-  const [satisfaction, setSatisfaction] =
-    useState(
-      editTrip?.satisfaction || ''
-    )
-
-  const [cost, setCost] =
-    useState(editTrip?.cost || '')
+        : '',
+      latitude: editTrip.latitude || '',
+      longitude: editTrip.longitude || '',
+      weather: editTrip.weather || '',
+      members: editTrip.members || '',
+      satisfaction: String(editTrip.satisfaction || ''),
+      cost: String(editTrip.cost || '')
+      })
+    }, 0)
+  }, [editTrip])
 
   /* =========================
       保存
@@ -59,24 +63,21 @@ export default function TripForm({
 
     // 必須チェック
     if (
-      !title ||
-      !lat ||
-      !lng ||
-      !satisfaction
+      !form.title ||
+      !form.latitude ||
+      !form.longitude ||
+      !form.satisfaction
     ) {
 
-      alert(
-        'タイトル・位置・満足度は必須です'
-      )
-
+      alert('タイトル・位置・満足度は必須です')
       return
     }
 
     setLoading(true)
 
     // YYYY-MM-DD → YYYY/MM/DD
-    const formattedDate = date
-      ? date.replaceAll('-', '/')
+    const formattedDate = form.trip_date
+      ? form.trip_date.replaceAll('-', '/')
       : null
 
     /* =====================
@@ -84,42 +85,35 @@ export default function TripForm({
     ===================== */
 
     const payload = {
-
-      title,
-      description,
-
+      title: form.title,
+      description: form.description,
       trip_date: formattedDate,
-
-      latitude: parseFloat(lat),
-      longitude: parseFloat(lng),
-
-      weather,
-      members,
-
-      satisfaction: parseInt(
-        satisfaction
-      ),
-
-      cost: cost
-        ? parseInt(cost)
-        : null
+      latitude: parseFloat(form.latitude),
+      longitude: parseFloat(form.longitude),
+      weather: form.weather,
+      members: form.members,
+      satisfaction: parseInt(form.satisfaction),
+      cost: form.cost ? parseInt(form.cost) : null
     }
 
-    let error = null
 
     /* =====================
         編集
     ===================== */
 
     if (editTrip) {
+      const result = await supabase
+        .from('trips')
+        .update(payload)
+        .eq('id', editTrip.id)
 
-      const result =
-        await supabase
-          .from('trips')
-          .update(payload)
-          .eq('id', editTrip.id)
+      setLoading(false)
 
-      error = result.error
+      if (result.error) {
+        console.error(result.error)
+        alert('更新失敗')
+        return
+      }
     }
 
     /* =====================
@@ -127,59 +121,37 @@ export default function TripForm({
     ===================== */
 
     else {
+      const result = await supabase
+        .from('trips')
+        .insert({ user_id: user.id, ...payload })
 
-      const result =
-        await supabase
-          .from('trips')
-          .insert({
-            user_id: user.id,
-            ...payload
-          })
+      setLoading(false)
 
-      error = result.error
-    }
-
-    setLoading(false)
-
-    /* =====================
-        エラー
-    ===================== */
-
-    if (error) {
-
-      console.error(error)
-
-      alert(
-        editTrip
-          ? '更新失敗'
-          : '保存失敗'
-      )
-
-      return
+      if (result.error) {
+        console.error(result.error)
+        alert('保存失敗')
+        return
+      }
     }
 
     /* =====================
         成功
     ===================== */
 
-    alert(
-      editTrip
-        ? '更新成功！'
-        : '保存成功！'
-    )
+    alert(editTrip ? '更新成功！' : '保存成功！')
 
     // リセット
-    setTitle('')
-    setDescription('')
-    setDate('')
-
-    setLat('')
-    setLng('')
-
-    setWeather('')
-    setMembers('')
-    setSatisfaction('')
-    setCost('')
+    setForm({
+      title: '',
+      description: '',
+      trip_date: '',
+      latitude: '',
+      longitude: '',
+      weather: '',
+      members: '',
+      satisfaction: '',
+      cost: ''
+    })
 
     onSaved()
   }
@@ -221,9 +193,9 @@ export default function TripForm({
       <input
         className="form-input"
         placeholder="タイトル（例：京都旅行）"
-        value={title}
+        value={form.title}
         onChange={(e) =>
-          setTitle(e.target.value)
+          setForm({ ...form, title: e.target.value })
         }
       />
 
@@ -232,9 +204,9 @@ export default function TripForm({
       <textarea
         className="form-textarea"
         placeholder="説明"
-        value={description}
+        value={form.description}
         onChange={(e) =>
-          setDescription(e.target.value)
+          setForm({ ...form, description: e.target.value })
         }
       />
 
@@ -243,9 +215,9 @@ export default function TripForm({
       <input
         className="form-input"
         type="date"
-        value={date}
+        value={form.trip_date}
         onChange={(e) =>
-          setDate(e.target.value)
+          setForm({ ...form, trip_date: e.target.value })
         }
       />
 
@@ -254,16 +226,14 @@ export default function TripForm({
       <div className="map-section">
 
         <SelectMap
+          key={`${form.latitude}-${form.longitude}`}
           mode="select"
 
-          initialLat={lat}
-          initialLng={lng}
+          initialLat={form.latitude}
+          initialLng={form.longitude}
 
           onSelect={(lat, lng) => {
-
-            setLat(lat)
-            setLng(lng)
-
+            setForm({ ...form, latitude: lat, longitude: lng })
           }}
         />
 
@@ -273,7 +243,7 @@ export default function TripForm({
 
       <input
         className="form-input"
-        value={lat}
+        value={form.latitude}
         placeholder="緯度"
         readOnly
       />
@@ -282,7 +252,7 @@ export default function TripForm({
 
       <input
         className="form-input"
-        value={lng}
+        value={form.longitude}
         placeholder="経度"
         readOnly
       />
@@ -291,9 +261,9 @@ export default function TripForm({
 
       <select
         className="form-input"
-        value={weather}
+        value={form.weather}
         onChange={(e) =>
-          setWeather(e.target.value)
+          setForm({ ...form, weather: e.target.value })
         }
       >
 
@@ -324,9 +294,9 @@ export default function TripForm({
       <input
         className="form-input"
         placeholder="メンバー"
-        value={members}
+        value={form.members}
         onChange={(e) =>
-          setMembers(e.target.value)
+          setForm({ ...form, members: e.target.value })
         }
       />
 
@@ -334,9 +304,9 @@ export default function TripForm({
 
       <select
         className="form-input"
-        value={satisfaction}
+        value={form.satisfaction}
         onChange={(e) =>
-          setSatisfaction(e.target.value)
+          setForm({ ...form, satisfaction: e.target.value })
         }
       >
 
@@ -371,9 +341,9 @@ export default function TripForm({
       <input
         className="form-input"
         placeholder="費用"
-        value={cost}
+        value={form.cost}
         onChange={(e) =>
-          setCost(e.target.value)
+          setForm({ ...form, cost: e.target.value })
         }
       />
 
