@@ -676,6 +676,13 @@ export default function MainPage({
                       borderRadius: '8px'
                     }}
                   >
+                    <div
+                      style={{
+                        fontWeight: 'bold',
+                        fontSize: '24px',
+                      }}>
+                      {trip.title}
+                    </div>
 
                     {/* 画像 */}
 
@@ -694,11 +701,6 @@ export default function MainPage({
                       />
 
                     )}
-
-                    <div>
-                      タイトル：
-                      {trip.title}
-                    </div>
 
                     <div>
                       日付：
