@@ -17,22 +17,36 @@ import './MainPage.css'
 
 
 function buildVector(trips) {
+
   const SEG = 36
 
-  const vector = new Array(SEG).fill(0)
+  const vector =
+    new Array(SEG).fill(0)
 
   trips.forEach((trip) => {
-    if (!trip.latitude || !trip.longitude) return
+
+    if (
+      !trip.latitude ||
+      !trip.longitude
+    ) {
+      return
+    }
 
     const lat = trip.latitude
     const lng = trip.longitude
 
     const angle =
-      Math.atan2(lat - 36, lng - 138) + Math.PI
+      Math.atan2(
+        lat - 36,
+        lng - 138
+      ) + Math.PI
 
     const index =
       Math.floor(
-        (angle / (Math.PI * 2)) * SEG
+        (
+          angle /
+          (Math.PI * 2)
+        ) * SEG
       )
 
     const value =
@@ -49,17 +63,24 @@ function buildVector(trips) {
 ========================= */
 
 function cosineSimilarity(a, b) {
+
   let dot = 0
   let normA = 0
   let normB = 0
 
   for (let i = 0; i < a.length; i++) {
+
     dot += a[i] * b[i]
+
     normA += a[i] * a[i]
+
     normB += b[i] * b[i]
   }
 
-  if (normA === 0 || normB === 0) {
+  if (
+    normA === 0 ||
+    normB === 0
+  ) {
     return 0
   }
 
@@ -81,10 +102,11 @@ export default function MainPage({
 }) {
 
   /* =========================
-     state
+      state
   ========================= */
 
-  const [trips, setTrips] = useState([])
+  const [trips, setTrips] =
+    useState([])
 
   const [profile, setProfile] =
     useState(null)
@@ -92,39 +114,53 @@ export default function MainPage({
   const [showForm, setShowForm] =
     useState(false)
 
-  const [similarUsers, setSimilarUsers] =
-    useState([])
+  // 編集用
+  const [
+    editingTrip,
+    setEditingTrip
+  ] = useState(null)
+
+  const [
+    similarUsers,
+    setSimilarUsers
+  ] = useState([])
 
   // タブ
   const [activeTab, setActiveTab] =
     useState('myTrips')
 
   /* =========================
-     初期ロード
+      初期ロード
   ========================= */
 
   useEffect(() => {
+
     if (user) {
+
       fetchTrips()
       fetchProfile()
+
     }
+
   }, [user])
 
   /* =========================
-     trip更新時
+      trip更新時
   ========================= */
 
   useEffect(() => {
+
     if (trips.length > 0) {
       fetchSimilarUsers()
     }
+
   }, [trips])
 
   /* =========================
-     自分のtrip取得
+      自分のtrip取得
   ========================= */
 
-  const fetchTrips = async () => {
+  async function fetchTrips() {
 
     const { data, error } =
       await supabase
@@ -137,18 +173,20 @@ export default function MainPage({
         )
 
     if (error) {
+
       console.error(error)
       return
+
     }
 
     setTrips(data || [])
   }
 
   /* =========================
-     profile取得
+      profile取得
   ========================= */
 
-  const fetchProfile = async () => {
+  async function fetchProfile() {
 
     const { data, error } =
       await supabase
@@ -158,18 +196,20 @@ export default function MainPage({
         .single()
 
     if (error) {
+
       console.error(error)
       return
+
     }
 
     setProfile(data)
   }
 
   /* =========================
-     類似ユーザー取得
+      類似ユーザー取得
   ========================= */
 
-  const fetchSimilarUsers = async () => {
+  async function fetchSimilarUsers() {
 
     // 全trip取得
     const {
@@ -179,9 +219,14 @@ export default function MainPage({
       .from('trips')
       .select('*')
 
-    if (tripError || !allTrips) {
+    if (
+      tripError ||
+      !allTrips
+    ) {
+
       console.error(tripError)
       return
+
     }
 
     // 全profile取得
@@ -192,9 +237,14 @@ export default function MainPage({
       .from('profiles')
       .select('*')
 
-    if (profileError || !profiles) {
+    if (
+      profileError ||
+      !profiles
+    ) {
+
       console.error(profileError)
       return
+
     }
 
     // user_idごと整理
@@ -203,10 +253,13 @@ export default function MainPage({
     allTrips.forEach((trip) => {
 
       if (!userMap[trip.user_id]) {
+
         userMap[trip.user_id] = []
+
       }
 
-      userMap[trip.user_id].push(trip)
+      userMap[trip.user_id]
+        .push(trip)
     })
 
     // 自分ベクトル
@@ -215,11 +268,13 @@ export default function MainPage({
 
     const results = []
 
-    Object.entries(userMap).forEach(
-      ([uid, userTrips]) => {
+    Object.entries(userMap)
+      .forEach(([uid, userTrips]) => {
 
         // 自分除外
-        if (uid === user.id) return
+        if (uid === user.id) {
+          return
+        }
 
         // ベクトル
         const vec =
@@ -236,7 +291,8 @@ export default function MainPage({
         const profile =
           profiles.find(
             (p) =>
-              String(p.id) ===
+              String(p.id)
+              ===
               String(uid)
           )
 
@@ -245,24 +301,30 @@ export default function MainPage({
           [...userTrips]
             .sort(
               (a, b) =>
-                (b.satisfaction || 0) -
-                (a.satisfaction || 0)
+                (
+                  b.satisfaction || 0
+                )
+                -
+                (
+                  a.satisfaction || 0
+                )
             )
             .slice(0, 1)
 
         results.push({
+
           user_id: uid,
 
           username:
-            profile?.username ||
-            '未設定',
+            profile?.username
+            || '未設定',
 
           similarity,
 
           topTrips
+
         })
-      }
-    )
+      })
 
     // 類似度順
     results.sort(
@@ -276,6 +338,7 @@ export default function MainPage({
   }
 
   return (
+
     <div>
 
       <Header
@@ -306,29 +369,29 @@ export default function MainPage({
       </button>
 
       {/* =========================
-          モーダル
+          追加モーダル
       ========================= */}
 
       {showForm && (
+
         <div className="modal">
 
           <div className="modal-content">
 
-            <button
-              className="close-btn"
-              onClick={() =>
-                setShowForm(false)
-              }
-            >
-              閉じる
-            </button>
-
             <TripForm
               user={user}
+
               onSaved={() => {
+
                 fetchTrips()
+
                 setShowForm(false)
+
               }}
+
+              onClose={() =>
+                setShowForm(false)
+              }
             />
 
           </div>
@@ -337,104 +400,156 @@ export default function MainPage({
       )}
 
       {/* =========================
+            編集モーダル
+        ========================= */}
+
+        {editingTrip && (
+
+          <div
+            className="modal"
+            key={editingTrip.id}
+          >
+
+            <div className="modal-content">
+
+              <TripForm
+                key={editingTrip.id}
+
+                user={user}
+
+                editTrip={{
+                  ...editingTrip
+                }}
+
+                onSaved={() => {
+
+                  fetchTrips()
+
+                  setEditingTrip(null)
+
+                }}
+
+                onClose={() =>
+                  setEditingTrip(null)
+                }
+              />
+
+            </div>
+
+          </div>
+        )}
+
+      {/* =========================
           地図
       ========================= */}
 
       <div className="map-container">
+
         <MapView
           trips={trips}
           profile={profile}
         />
+
       </div>
 
       {/* =========================
-    タブ
-========================= */}
+          タブ
+      ========================= */}
 
-<div
-  style={{
-    display: 'flex',
-    justifyContent: 'center',
-    padding: '20px'
-  }}
->
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          padding: '20px'
+        }}
+      >
 
-  <div
-    style={{
-      display: 'flex',
-      gap: '15px'
-    }}
-  >
+        <div
+          style={{
+            display: 'flex',
+            gap: '15px'
+          }}
+        >
 
-    {/* 自分 */}
-    <button
-      onClick={() =>
-        setActiveTab('myTrips')
-      }
-      style={{
-        width: '180px',
-        padding: '14px 0',
+          {/* 自分 */}
 
-        border: 'none',
-        borderRadius: '14px',
+          <button
+            onClick={() =>
+              setActiveTab('myTrips')
+            }
+            style={{
 
-        cursor: 'pointer',
+              width: '180px',
 
-        fontSize: '16px',
-        fontWeight: 'bold',
+              padding: '14px 0',
 
-        transition: '0.2s',
+              border: 'none',
 
-        background:
-          activeTab === 'myTrips'
-            ? '#333'
-            : '#ddd',
+              borderRadius: '14px',
 
-        color:
-          activeTab === 'myTrips'
-            ? '#fff'
-            : '#000'
-      }}
-    >
-      自分の旅
-    </button>
+              cursor: 'pointer',
 
-    {/* 類似 */}
-    <button
-      onClick={() =>
-        setActiveTab('similar')
-      }
-      style={{
-        width: '180px',
-        padding: '14px 0',
+              fontSize: '16px',
 
-        border: 'none',
-        borderRadius: '14px',
+              fontWeight: 'bold',
 
-        cursor: 'pointer',
+              transition: '0.2s',
 
-        fontSize: '16px',
-        fontWeight: 'bold',
+              background:
+                activeTab === 'myTrips'
+                  ? '#333'
+                  : '#ddd',
 
-        transition: '0.2s',
+              color:
+                activeTab === 'myTrips'
+                  ? '#fff'
+                  : '#000'
+            }}
+          >
+            自分の旅
+          </button>
 
-        background:
-          activeTab === 'similar'
-            ? '#333'
-            : '#ddd',
+          {/* 類似 */}
 
-        color:
-          activeTab === 'similar'
-            ? '#fff'
-            : '#000'
-      }}
-    >
-      類似ユーザー
-    </button>
+          <button
+            onClick={() =>
+              setActiveTab('similar')
+            }
+            style={{
 
-  </div>
+              width: '180px',
 
-</div>
+              padding: '14px 0',
+
+              border: 'none',
+
+              borderRadius: '14px',
+
+              cursor: 'pointer',
+
+              fontSize: '16px',
+
+              fontWeight: 'bold',
+
+              transition: '0.2s',
+
+              background:
+                activeTab === 'similar'
+                  ? '#333'
+                  : '#ddd',
+
+              color:
+                activeTab === 'similar'
+                  ? '#fff'
+                  : '#000'
+            }}
+          >
+            類似ユーザー
+          </button>
+
+        </div>
+
+      </div>
 
       {/* =========================
           タブ内容
@@ -447,7 +562,15 @@ export default function MainPage({
         ===================== */}
 
         {activeTab === 'myTrips' && (
-          <TripList trips={trips} />
+
+          <TripList
+            trips={trips}
+
+            onEdit={(trip) =>
+              setEditingTrip(trip)
+            }
+          />
+
         )}
 
         {/* =====================
@@ -473,6 +596,7 @@ export default function MainPage({
               <div
                 key={u.user_id}
                 style={{
+
                   marginBottom: '20px',
 
                   padding: '15px',
@@ -485,11 +609,13 @@ export default function MainPage({
               >
 
                 {/* 名前 */}
+
                 <h4>
                   {u.username}
                 </h4>
 
                 {/* 類似度 */}
+
                 <div>
                   類似度：
                   {(u.similarity * 100)
@@ -497,6 +623,7 @@ export default function MainPage({
                 </div>
 
                 {/* おすすめ旅 */}
+
                 <div
                   style={{
                     marginTop: '10px'
@@ -512,6 +639,7 @@ export default function MainPage({
                   <div
                     key={trip.id}
                     style={{
+
                       marginTop: '10px',
 
                       padding: '10px',
@@ -529,20 +657,20 @@ export default function MainPage({
 
                     <div>
                       日付：
-                      {trip.trip_date ||
-                        '未設定'}
+                      {trip.trip_date
+                        || '未設定'}
                     </div>
 
                     <div>
                       天気：
-                      {trip.weather ||
-                        '未設定'}
+                      {trip.weather
+                        || '未設定'}
                     </div>
 
                     <div>
                       満足度：
-                      {trip.satisfaction ||
-                        '-'}
+                      {trip.satisfaction
+                        || '-'}
                     </div>
 
                     <div>
