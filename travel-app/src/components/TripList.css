@@ -88,3 +88,8 @@
 .trip-detail span {
   font-weight: bold;
 }
+
+body.dark .trip-card {
+  background: #1f2937;
+  color: white;
+}
