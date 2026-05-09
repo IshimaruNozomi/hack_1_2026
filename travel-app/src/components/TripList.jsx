@@ -9,6 +9,8 @@ export default function TripList({
   onDeleted
 }) {
 
+  
+
   const [selectedTrip, setSelectedTrip] =
     useState(null)
 
@@ -28,26 +30,63 @@ export default function TripList({
 
     setDeleting(true)
 
-    console.log(
-      '削除対象',
-      deleteTarget
-    )
+    /* =========================
+        Storage画像削除
+    ========================= */
+
+    if (deleteTarget.image_url) {
+
+      try {
+
+        const url =
+          deleteTarget.image_url
+
+        /*
+          URL例:
+          .../storage/v1/object/public/trip-image/USERID/FILENAME.jpg
+        */
+
+        const splitTarget = '/trip-images/'
+
+        if (url.includes(splitTarget)) {
+
+          const filePath = url.split(splitTarget)[1]
+
+          console.log('削除ファイルパス', filePath)
+
+          const { error: storageError } = await supabase.storage
+            .from('trip-images')
+            .remove([filePath])
+
+          if (storageError) {
+
+            console.error(
+              'storage delete error',
+              storageError
+            )
+
+          }
+
+        }
+
+      } catch (e) {
+
+        console.error(e)
+
+      }
+    }
+
+    /* =========================
+        DB削除
+    ========================= */
 
     const {
-      data,
       error
     } =
       await supabase
         .from('trips')
         .delete()
-        .eq(
-          'id',
-          String(deleteTarget.id)
-        )
-        .select()
-
-    console.log('delete data', data)
-    console.log('delete error', error)
+        .eq('id', deleteTarget.id)
 
     setDeleting(false)
 
@@ -64,7 +103,7 @@ export default function TripList({
 
     setDeleteTarget(null)
 
-    // 詳細モーダルも閉じる
+    // 詳細モーダル閉じる
     setSelectedTrip(null)
 
     // 再取得
@@ -88,18 +127,52 @@ export default function TripList({
         >
 
           {/* =====================
-              左側情報
+              左側
           ===================== */}
 
-          <div>
+          <div
+            style={{
+              flex: 1
+            }}
+          >
+
+            {/* 画像 */}
+
+            {trip.image_url && (
+
+              <img
+                src={
+                  trip.image_url
+                    ? (trip.updated_at
+                        ? `${trip.image_url}${trip.image_url.includes('?') ? '&' : '?'}v=${new Date(trip.updated_at).getTime()}`
+                        : trip.image_url)
+                    : ''
+                }
+                alt={trip.title}
+                style={{
+                  width: '100%',
+                  height: '180px',
+                  objectFit: 'cover',
+                  borderRadius: '12px',
+                  marginBottom: '12px'
+                }}
+              />
+
+            )}
+
+            {/* タイトル */}
 
             <h3 className="trip-title">
               {trip.title}
             </h3>
 
+            {/* 日付 */}
+
             <p className="trip-date">
               {trip.trip_date || '日付なし'}
             </p>
+
+            {/* 満足度 */}
 
             <p className="trip-satisfaction">
               満足度：
@@ -115,7 +188,8 @@ export default function TripList({
           <div
             style={{
               display: 'flex',
-              gap: '10px'
+              gap: '10px',
+              marginLeft: '15px'
             }}
           >
 
@@ -185,6 +259,8 @@ export default function TripList({
 
           <div className="trip-modal-content">
 
+            {/* 閉じる */}
+
             <button
               className="close-btn"
               onClick={() =>
@@ -194,9 +270,38 @@ export default function TripList({
               ✕
             </button>
 
+            {/* タイトル */}
+
             <h2>
               {selectedTrip.title}
             </h2>
+
+            {/* 画像 */}
+
+            {selectedTrip.image_url && (
+
+              <img
+                src={
+                  selectedTrip.image_url
+                    ? (selectedTrip.updated_at
+                        ? `${selectedTrip.image_url}${selectedTrip.image_url.includes('?') ? '&' : '?'}v=${new Date(selectedTrip.updated_at).getTime()}`
+                        : selectedTrip.image_url)
+                    : ''
+                }
+                alt={selectedTrip.title}
+                style={{
+                  width: '100%',
+                  maxHeight: '350px',
+                  objectFit: 'cover',
+                  borderRadius: '14px',
+                  marginTop: '15px',
+                  marginBottom: '20px'
+                }}
+              />
+
+            )}
+
+            {/* 詳細 */}
 
             <div className="trip-detail">
 
@@ -300,7 +405,7 @@ export default function TripList({
                 キャンセル
               </button>
 
-              {/* 削除実行 */}
+              {/* 削除 */}
 
               <button
                 onClick={handleDelete}
