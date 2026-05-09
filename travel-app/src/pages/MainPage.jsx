@@ -662,14 +662,17 @@ export default function MainPage({
                           objectFit: 'cover',
                           borderRadius: '10px',
                           marginBottom: '10px',
-                          margin: '15px'
 
                         }}
                       />
 
                     )}
 
-                    <div>
+                    <div
+                       style={{
+                         marginBottom: '15px'
+                       }}
+                    >
                       {trip.description
                         || '未設定'}
                     </div>
@@ -680,7 +683,11 @@ export default function MainPage({
                         || '-'}
                     </div>
 
-                    <div>
+                    <div
+                       style={{
+                         marginBottom: '20px'
+                       }}
+                    >
                       費用：
                       {trip.cost || '-'}円
                     </div>
