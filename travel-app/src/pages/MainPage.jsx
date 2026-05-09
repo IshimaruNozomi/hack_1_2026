@@ -114,7 +114,6 @@ export default function MainPage({
   const [showForm, setShowForm] =
     useState(false)
 
-  // 編集用
   const [
     editingTrip,
     setEditingTrip
@@ -125,7 +124,6 @@ export default function MainPage({
     setSimilarUsers
   ] = useState([])
 
-  // タブ
   const [activeTab, setActiveTab] =
     useState('myTrips')
 
@@ -179,6 +177,8 @@ export default function MainPage({
 
     }
 
+    console.log('fetched trips', data)
+
     setTrips(data || [])
   }
 
@@ -211,7 +211,6 @@ export default function MainPage({
 
   async function fetchSimilarUsers() {
 
-    // 全trip取得
     const {
       data: allTrips,
       error: tripError
@@ -229,7 +228,6 @@ export default function MainPage({
 
     }
 
-    // 全profile取得
     const {
       data: profiles,
       error: profileError
@@ -247,7 +245,6 @@ export default function MainPage({
 
     }
 
-    // user_idごと整理
     const userMap = {}
 
     allTrips.forEach((trip) => {
@@ -262,7 +259,6 @@ export default function MainPage({
         .push(trip)
     })
 
-    // 自分ベクトル
     const myVector =
       buildVector(trips)
 
@@ -271,23 +267,19 @@ export default function MainPage({
     Object.entries(userMap)
       .forEach(([uid, userTrips]) => {
 
-        // 自分除外
         if (uid === user.id) {
           return
         }
 
-        // ベクトル
         const vec =
           buildVector(userTrips)
 
-        // 類似度
         const similarity =
           cosineSimilarity(
             myVector,
             vec
           )
 
-        // profile
         const profile =
           profiles.find(
             (p) =>
@@ -296,7 +288,6 @@ export default function MainPage({
               String(uid)
           )
 
-        // 満足度最大旅
         const topTrips =
           [...userTrips]
             .sort(
@@ -326,7 +317,6 @@ export default function MainPage({
         })
       })
 
-    // 類似度順
     results.sort(
       (a, b) =>
         b.similarity - a.similarity
@@ -361,15 +351,18 @@ export default function MainPage({
 
       <button
         className="fab"
-        onClick={() =>
+        onClick={() => {
+
+          setEditingTrip(null)
           setShowForm(true)
-        }
+
+        }}
       >
         ＋
       </button>
 
       {/* =========================
-          追加モーダル
+          新規追加モーダル
       ========================= */}
 
       {showForm && (
@@ -379,11 +372,13 @@ export default function MainPage({
           <div className="modal-content">
 
             <TripForm
+              key="create-trip"
+
               user={user}
 
-              onSaved={() => {
+              onSaved={async () => {
 
-                fetchTrips()
+                await fetchTrips()
 
                 setShowForm(false)
 
@@ -400,44 +395,47 @@ export default function MainPage({
       )}
 
       {/* =========================
-            編集モーダル
-        ========================= */}
+          編集モーダル
+      ========================= */}
 
-        {editingTrip && (
+      {editingTrip && (
 
-          <div
-            className="modal"
-            key={editingTrip.id}
-          >
+        <div
+          className="modal"
+        >
 
-            <div className="modal-content">
+          <div className="modal-content">
 
-              <TripForm
-                key={editingTrip.id}
+            <TripForm
+              key={
+                `${editingTrip.id}-${editingTrip.image_url || ''}`
+              }
 
-                user={user}
+              user={user}
 
-                editTrip={{
-                  ...editingTrip
-                }}
+              editTrip={editingTrip}
 
-                onSaved={() => {
+              onSaved={async () => {
 
-                  fetchTrips()
+                console.log(
+                  'editing saved'
+                )
 
-                  setEditingTrip(null)
+                await fetchTrips()
 
-                }}
+                setEditingTrip(null)
 
-                onClose={() =>
-                  setEditingTrip(null)
-                }
-              />
+              }}
 
-            </div>
+              onClose={() =>
+                setEditingTrip(null)
+              }
+            />
 
           </div>
-        )}
+
+        </div>
+      )}
 
       {/* =========================
           地図
@@ -565,12 +563,25 @@ export default function MainPage({
 
           <TripList
             trips={trips}
-            onEdit={(trip) =>
-              setEditingTrip(trip)
-            }
-            onDeleted={() =>
-              fetchTrips()
-            }
+            onEdit={(trip) => {
+
+              console.log(
+                'edit clicked',
+                trip
+              )
+
+              setShowForm(false)
+
+              setEditingTrip({
+                ...trip
+              })
+
+            }}
+            onDeleted={async () => {
+
+              await fetchTrips()
+
+            }}
           />
 
         )}
@@ -680,6 +691,24 @@ export default function MainPage({
                       borderRadius: '8px'
                     }}
                   >
+
+                    {/* 画像 */}
+
+                    {trip.image_url && (
+
+                      <img
+                        src={trip.image_url}
+                        alt={trip.title}
+                        style={{
+                          width: '100%',
+                          height: '180px',
+                          objectFit: 'cover',
+                          borderRadius: '10px',
+                          marginBottom: '10px'
+                        }}
+                      />
+
+                    )}
 
                     <div>
                       タイトル：
