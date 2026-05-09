@@ -50,9 +50,17 @@ export default function TripList({
 
           <button
             onClick={(e) => {
+
               e.stopPropagation()
 
+              console.log(trip)
+
+              // 詳細モーダル閉じる
+              setSelectedTrip(null)
+
+              // 編集開始
               onEdit(trip)
+
             }}
             style={{
               padding: '10px 16px',
@@ -63,7 +71,6 @@ export default function TripList({
               cursor: 'pointer',
               fontWeight: 'bold',
               height: 'fit-content'
-              
             }}
           >
             編集
