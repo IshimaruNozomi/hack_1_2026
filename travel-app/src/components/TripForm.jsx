@@ -257,37 +257,35 @@ export default function TripForm({
         readOnly
       />
 
-      {/* 天気 */}
+      {/* 天気（ラジオボタン） */}
 
-      <select
-        className="form-input"
-        value={form.weather}
-        onChange={(e) =>
-          setForm({ ...form, weather: e.target.value })
-        }
-      >
+      <div className="form-radio-group">
+        <div className="form-radio-label">天気</div>
 
-        <option value="">
-          天気を選択
-        </option>
+        {['快晴', '晴れ', '曇り', '雨'].map((w) => (
+          <label key={w} className="form-radio-item">
+            <input
+              type="radio"
+              name="weather"
+              value={w}
+              checked={form.weather === w}
+              onChange={() => setForm({ ...form, weather: w })}
+            />
+            <span>{w}</span>
+          </label>
+        ))}
 
-        <option value="快晴">
-          快晴
-        </option>
-
-        <option value="晴れ">
-          晴れ
-        </option>
-
-        <option value="曇り">
-          曇り
-        </option>
-
-        <option value="雨">
-          雨
-        </option>
-
-      </select>
+        <label className="form-radio-item">
+          <input
+            type="radio"
+            name="weather"
+            value=""
+            checked={!form.weather}
+            onChange={() => setForm({ ...form, weather: '' })}
+          />
+          <span>未選択</span>
+        </label>
+      </div>
 
       {/* メンバー */}
 
@@ -300,41 +298,25 @@ export default function TripForm({
         }
       />
 
-      {/* 満足度 */}
+      {/* 満足度（ラジオボタン） */}
 
-      <select
-        className="form-input"
-        value={form.satisfaction}
-        onChange={(e) =>
-          setForm({ ...form, satisfaction: e.target.value })
-        }
-      >
+      <div className="form-radio-group">
+        <div className="form-radio-label">満足度（必須）</div>
 
-        <option value="">
-          満足度を選択（必須）
-        </option>
+        {[1, 2, 3, 4, 5].map((n) => (
+          <label key={n} className="form-radio-item">
+            <input
+              type="radio"
+              name="satisfaction"
+              value={String(n)}
+              checked={String(form.satisfaction) === String(n)}
+              onChange={() => setForm({ ...form, satisfaction: String(n) })}
+            />
+            <span>{n}</span>
+          </label>
+        ))}
 
-        <option value="1">
-          1
-        </option>
-
-        <option value="2">
-          2
-        </option>
-
-        <option value="3">
-          3
-        </option>
-
-        <option value="4">
-          4
-        </option>
-
-        <option value="5">
-          5
-        </option>
-
-      </select>
+      </div>
 
       {/* 費用 */}
 
