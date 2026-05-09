@@ -558,9 +558,11 @@ export default function MainPage({
 
           <TripList
             trips={trips}
-
             onEdit={(trip) =>
               setEditingTrip(trip)
+            }
+            onDeleted={() =>
+              fetchTrips()
             }
           />
 
