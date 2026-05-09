@@ -1,24 +1,59 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import SelectMap from '../components/SelectMap'
+
 import './TripForm.css'
 
-export default function TripForm({ user, onSaved, onClose }) {
+export default function TripForm({
+  user,
+  onSaved,
+  onClose,
+  editTrip
+}) {
 
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [date, setDate] = useState('')
+  /* =========================
+      state
+  ========================= */
 
-  const [lat, setLat] = useState('')
-  const [lng, setLng] = useState('')
+  const [title, setTitle] =
+    useState(editTrip?.title || '')
 
-  const [loading, setLoading] = useState(false)
+  const [description, setDescription] =
+    useState(editTrip?.description || '')
 
-  const [weather, setWeather] = useState('')
-  const [members, setMembers] = useState('')
-  const [satisfaction, setSatisfaction] = useState('')
-  const [cost, setCost] = useState('')
-  
+  const [date, setDate] =
+    useState(
+      editTrip?.trip_date
+        ? editTrip.trip_date.replaceAll('/', '-')
+        : ''
+    )
+
+  const [lat, setLat] =
+    useState(editTrip?.latitude || '')
+
+  const [lng, setLng] =
+    useState(editTrip?.longitude || '')
+
+  const [loading, setLoading] =
+    useState(false)
+
+  const [weather, setWeather] =
+    useState(editTrip?.weather || '')
+
+  const [members, setMembers] =
+    useState(editTrip?.members || '')
+
+  const [satisfaction, setSatisfaction] =
+    useState(
+      editTrip?.satisfaction || ''
+    )
+
+  const [cost, setCost] =
+    useState(editTrip?.cost || '')
+
+  /* =========================
+      保存
+  ========================= */
 
   const handleSubmit = async () => {
 
@@ -29,9 +64,11 @@ export default function TripForm({ user, onSaved, onClose }) {
       !lng ||
       !satisfaction
     ) {
+
       alert(
         'タイトル・位置・満足度は必須です'
       )
+
       return
     }
 
@@ -42,40 +79,94 @@ export default function TripForm({ user, onSaved, onClose }) {
       ? date.replaceAll('-', '/')
       : null
 
-    const { error } = await supabase
-      .from('trips')
-      .insert({
-        user_id: user.id,
+    /* =====================
+        保存データ
+    ===================== */
 
-        title,
-        description,
+    const payload = {
 
-        trip_date: formattedDate,
+      title,
+      description,
 
-        latitude: parseFloat(lat),
-        longitude: parseFloat(lng),
+      trip_date: formattedDate,
 
-        weather,
-        members,
+      latitude: parseFloat(lat),
+      longitude: parseFloat(lng),
 
-        satisfaction: parseInt(
-          satisfaction
-        ),
+      weather,
+      members,
 
-        cost: cost
-          ? parseInt(cost)
-          : null
-      })
+      satisfaction: parseInt(
+        satisfaction
+      ),
+
+      cost: cost
+        ? parseInt(cost)
+        : null
+    }
+
+    let error = null
+
+    /* =====================
+        編集
+    ===================== */
+
+    if (editTrip) {
+
+      const result =
+        await supabase
+          .from('trips')
+          .update(payload)
+          .eq('id', editTrip.id)
+
+      error = result.error
+    }
+
+    /* =====================
+        新規追加
+    ===================== */
+
+    else {
+
+      const result =
+        await supabase
+          .from('trips')
+          .insert({
+            user_id: user.id,
+            ...payload
+          })
+
+      error = result.error
+    }
 
     setLoading(false)
 
+    /* =====================
+        エラー
+    ===================== */
+
     if (error) {
+
       console.error(error)
-      alert('保存失敗')
+
+      alert(
+        editTrip
+          ? '更新失敗'
+          : '保存失敗'
+      )
+
       return
     }
 
-    alert('保存成功！')
+    /* =====================
+        成功
+    ===================== */
+
+    alert(
+      editTrip
+        ? '更新成功！'
+        : '保存成功！'
+    )
 
     // リセット
     setTitle('')
@@ -94,24 +185,39 @@ export default function TripForm({ user, onSaved, onClose }) {
   }
 
   return (
+
     <div className="trip-form">
 
-      <h2 className="form-title">旅を記録</h2>
+      {/* 閉じる */}
+
       <button
         type="button"
         onClick={() => {
-          if (typeof onClose === 'function') onClose()
+
+          if (
+            typeof onClose === 'function'
+          ) {
+            onClose()
+          }
+
         }}
         className="form-close"
       >
         閉じる
       </button>
 
+      {/* タイトル */}
+
       <h2 className="form-title">
-        旅を記録
+
+        {editTrip
+          ? '旅を編集'
+          : '旅を記録'}
+
       </h2>
 
-      {/* タイトル */}
+      {/* タイトル入力 */}
+
       <input
         className="form-input"
         placeholder="タイトル（例：京都旅行）"
@@ -122,6 +228,7 @@ export default function TripForm({ user, onSaved, onClose }) {
       />
 
       {/* 説明 */}
+
       <textarea
         className="form-textarea"
         placeholder="説明"
@@ -132,6 +239,7 @@ export default function TripForm({ user, onSaved, onClose }) {
       />
 
       {/* 日付 */}
+
       <input
         className="form-input"
         type="date"
@@ -142,17 +250,27 @@ export default function TripForm({ user, onSaved, onClose }) {
       />
 
       {/* 地図 */}
+
       <div className="map-section">
+
         <SelectMap
           mode="select"
+
+          initialLat={lat}
+          initialLng={lng}
+
           onSelect={(lat, lng) => {
+
             setLat(lat)
             setLng(lng)
+
           }}
         />
+
       </div>
 
       {/* 緯度 */}
+
       <input
         className="form-input"
         value={lat}
@@ -161,6 +279,7 @@ export default function TripForm({ user, onSaved, onClose }) {
       />
 
       {/* 経度 */}
+
       <input
         className="form-input"
         value={lng}
@@ -169,6 +288,7 @@ export default function TripForm({ user, onSaved, onClose }) {
       />
 
       {/* 天気 */}
+
       <select
         className="form-input"
         value={weather}
@@ -176,6 +296,7 @@ export default function TripForm({ user, onSaved, onClose }) {
           setWeather(e.target.value)
         }
       >
+
         <option value="">
           天気を選択
         </option>
@@ -195,9 +316,11 @@ export default function TripForm({ user, onSaved, onClose }) {
         <option value="雨">
           雨
         </option>
+
       </select>
 
       {/* メンバー */}
+
       <input
         className="form-input"
         placeholder="メンバー"
@@ -208,6 +331,7 @@ export default function TripForm({ user, onSaved, onClose }) {
       />
 
       {/* 満足度 */}
+
       <select
         className="form-input"
         value={satisfaction}
@@ -215,6 +339,7 @@ export default function TripForm({ user, onSaved, onClose }) {
           setSatisfaction(e.target.value)
         }
       >
+
         <option value="">
           満足度を選択（必須）
         </option>
@@ -238,9 +363,11 @@ export default function TripForm({ user, onSaved, onClose }) {
         <option value="5">
           5
         </option>
+
       </select>
 
       {/* 費用 */}
+
       <input
         className="form-input"
         placeholder="費用"
@@ -251,14 +378,25 @@ export default function TripForm({ user, onSaved, onClose }) {
       />
 
       {/* 保存ボタン */}
+
       <button
         className="form-button"
         onClick={handleSubmit}
         disabled={loading}
       >
+
         {loading
-          ? '保存中...'
-          : '保存'}
+          ? (
+            editTrip
+              ? '更新中...'
+              : '保存中...'
+          )
+          : (
+            editTrip
+              ? '更新する'
+              : '保存'
+          )}
+
       </button>
 
     </div>

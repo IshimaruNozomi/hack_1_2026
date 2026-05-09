@@ -79,6 +79,7 @@ export default function MainPage({
   /* =========================
      state
   ========================= */
+
   const [trips, setTrips] = useState([])
 
   const [profile, setProfile] =
@@ -86,6 +87,10 @@ export default function MainPage({
 
   const [showForm, setShowForm] =
     useState(false)
+
+  // 編集用
+  const [editingTrip, setEditingTrip] =
+    useState(null)
 
   const [similarUsers, setSimilarUsers] =
     useState([])
@@ -120,6 +125,7 @@ export default function MainPage({
   ========================= */
 
   async function fetchTrips() {
+
     const { data, error } =
       await supabase
         .from('trips')
@@ -143,6 +149,7 @@ export default function MainPage({
   ========================= */
 
   async function fetchProfile() {
+
     const { data, error } =
       await supabase
         .from('profiles')
@@ -163,6 +170,7 @@ export default function MainPage({
   ========================= */
 
   async function fetchSimilarUsers() {
+
     // 全trip取得
     const {
       data: allTrips,
@@ -193,9 +201,11 @@ export default function MainPage({
     const userMap = {}
 
     allTrips.forEach((trip) => {
+
       if (!userMap[trip.user_id]) {
         userMap[trip.user_id] = []
       }
+
       userMap[trip.user_id].push(trip)
     })
 
@@ -205,6 +215,7 @@ export default function MainPage({
     const results = []
 
     Object.entries(userMap).forEach(([uid, userTrips]) => {
+
       // 自分除外
       if (uid === user.id) return
 
@@ -212,31 +223,46 @@ export default function MainPage({
       const vec = buildVector(userTrips)
 
       // 類似度
-      const similarity = cosineSimilarity(myVector, vec)
+      const similarity =
+        cosineSimilarity(myVector, vec)
 
       // profile
-      const profile = profiles.find((p) => String(p.id) === String(uid))
+      const profile =
+        profiles.find(
+          (p) =>
+            String(p.id) === String(uid)
+        )
 
       // 満足度最大旅
       const topTrips = [...userTrips]
-        .sort((a, b) => (b.satisfaction || 0) - (a.satisfaction || 0))
+        .sort(
+          (a, b) =>
+            (b.satisfaction || 0)
+            -
+            (a.satisfaction || 0)
+        )
         .slice(0, 1)
 
       results.push({
         user_id: uid,
-        username: profile?.username || '未設定',
+        username:
+          profile?.username || '未設定',
         similarity,
         topTrips
       })
     })
 
     // 類似度順
-    results.sort((a, b) => b.similarity - a.similarity)
+    results.sort(
+      (a, b) =>
+        b.similarity - a.similarity
+    )
 
     setSimilarUsers(results.slice(0, 5))
   }
 
   return (
+
     <div>
 
       {/* =========================
@@ -264,22 +290,14 @@ export default function MainPage({
       </button>
 
       {/* =========================
-          モーダル
+          追加モーダル
       ========================= */}
 
       {showForm && (
+
         <div className="modal">
 
           <div className="modal-content">
-
-            <button
-              className="close-btn"
-              onClick={() =>
-                setShowForm(false)
-              }
-            >
-              閉じる
-            </button>
 
             <TripForm
               user={user}
@@ -287,7 +305,36 @@ export default function MainPage({
                 fetchTrips()
                 setShowForm(false)
               }}
-              onClose={() => setShowForm(false)}
+              onClose={() =>
+                setShowForm(false)
+              }
+            />
+
+          </div>
+
+        </div>
+      )}
+
+      {/* =========================
+          編集モーダル
+      ========================= */}
+
+      {editingTrip && (
+
+        <div className="modal">
+
+          <div className="modal-content">
+
+            <TripForm
+              user={user}
+              editTrip={editingTrip}
+              onSaved={() => {
+                fetchTrips()
+                setEditingTrip(null)
+              }}
+              onClose={() =>
+                setEditingTrip(null)
+              }
             />
 
           </div>
@@ -300,100 +347,104 @@ export default function MainPage({
       ========================= */}
 
       <div className="map-container">
+
         <MapView
           trips={trips}
           profile={profile}
         />
+
       </div>
 
       {/* =========================
-    タブ
-========================= */}
+          タブ
+      ========================= */}
 
-<div
-  style={{
-    display: 'flex',
-    justifyContent: 'center',
-    padding: '20px'
-  }}
->
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          padding: '20px'
+        }}
+      >
 
-  <div
-    style={{
-      display: 'flex',
-      gap: '15px'
-    }}
-  >
+        <div
+          style={{
+            display: 'flex',
+            gap: '15px'
+          }}
+        >
 
-    {/* 自分 */}
-    <button
-      onClick={() =>
-        setActiveTab('myTrips')
-      }
-      style={{
-        width: '180px',
-        padding: '14px 0',
+          {/* 自分 */}
 
-        border: 'none',
-        borderRadius: '14px',
+          <button
+            onClick={() =>
+              setActiveTab('myTrips')
+            }
+            style={{
+              width: '180px',
+              padding: '14px 0',
 
-        cursor: 'pointer',
+              border: 'none',
+              borderRadius: '14px',
 
-        fontSize: '16px',
-        fontWeight: 'bold',
+              cursor: 'pointer',
 
-        transition: '0.2s',
+              fontSize: '16px',
+              fontWeight: 'bold',
 
-        background:
-          activeTab === 'myTrips'
-            ? '#333'
-            : '#ddd',
+              transition: '0.2s',
 
-        color:
-          activeTab === 'myTrips'
-            ? '#fff'
-            : '#000'
-      }}
-    >
-      自分の旅
-    </button>
+              background:
+                activeTab === 'myTrips'
+                  ? '#333'
+                  : '#ddd',
 
-    {/* 類似 */}
-    <button
-      onClick={() =>
-        setActiveTab('similar')
-      }
-      style={{
-        width: '180px',
-        padding: '14px 0',
+              color:
+                activeTab === 'myTrips'
+                  ? '#fff'
+                  : '#000'
+            }}
+          >
+            自分の旅
+          </button>
 
-        border: 'none',
-        borderRadius: '14px',
+          {/* 類似 */}
 
-        cursor: 'pointer',
+          <button
+            onClick={() =>
+              setActiveTab('similar')
+            }
+            style={{
+              width: '180px',
+              padding: '14px 0',
 
-        fontSize: '16px',
-        fontWeight: 'bold',
+              border: 'none',
+              borderRadius: '14px',
 
-        transition: '0.2s',
+              cursor: 'pointer',
 
-        background:
-          activeTab === 'similar'
-            ? '#333'
-            : '#ddd',
+              fontSize: '16px',
+              fontWeight: 'bold',
 
-        color:
-          activeTab === 'similar'
-            ? '#fff'
-            : '#000'
-      }}
-    >
-      類似ユーザー
-    </button>
+              transition: '0.2s',
 
-  </div>
+              background:
+                activeTab === 'similar'
+                  ? '#333'
+                  : '#ddd',
 
-</div>
+              color:
+                activeTab === 'similar'
+                  ? '#fff'
+                  : '#000'
+            }}
+          >
+            類似ユーザー
+          </button>
+
+        </div>
+
+      </div>
 
       {/* =========================
           タブ内容
@@ -406,7 +457,14 @@ export default function MainPage({
         ===================== */}
 
         {activeTab === 'myTrips' && (
-          <TripList trips={trips} />
+
+          <TripList
+            trips={trips}
+            onEdit={(trip) =>
+              setEditingTrip(trip)
+            }
+          />
+
         )}
 
         {/* =====================
@@ -444,11 +502,13 @@ export default function MainPage({
               >
 
                 {/* 名前 */}
+
                 <h4>
                   {u.username}
                 </h4>
 
                 {/* 類似度 */}
+
                 <div>
                   類似度：
                   {(u.similarity * 100)
@@ -456,6 +516,7 @@ export default function MainPage({
                 </div>
 
                 {/* おすすめ旅 */}
+
                 <div
                   style={{
                     marginTop: '10px'
