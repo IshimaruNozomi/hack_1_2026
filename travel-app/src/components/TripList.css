@@ -8,13 +8,17 @@
 
 /* ===== カード ===== */
 .trip-card {
+  display: flex;
   background: #fff;
   padding: 16px;
+  padding-left: 20px;
   border-radius: 14px;
   cursor: pointer;
   transition: all 0.2s;
 
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  justify-content: space-between;
+  align-items: center;
 }
 
 /* ホバー */
@@ -25,14 +29,14 @@
 
 /* タイトル */
 .trip-title {
-  font-size: 16px;
+  font-size: 22px;
   font-weight: bold;
   margin-bottom: 4px;
 }
 
 /* 日付 */
 .trip-date {
-  font-size: 13px;
+  font-size: 16px;
   color: #666;
 }
 
