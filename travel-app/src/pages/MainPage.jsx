@@ -8,9 +8,13 @@ import TripForm from '../components/TripForm'
 
 import './MainPage.css'
 
+
+
+
 /* =========================
    ベクトル生成
 ========================= */
+
 
 function buildVector(trips) {
 
@@ -337,16 +341,19 @@ export default function MainPage({
 
     <div>
 
-      {/* =========================
-          Header
-      ========================= */}
-
       <Header
         onLogout={onLogout}
         setPage={setPage}
         darkMode={darkMode}
         setDarkMode={setDarkMode}
       />
+
+
+      {/* =========================
+          Header
+      ========================= */}
+
+    
 
       {/* =========================
           FAB
