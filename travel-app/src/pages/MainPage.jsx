@@ -610,18 +610,41 @@ export default function MainPage({
                 }}
               >
 
-                {/* 名前 */}
+                {/* 名前 + 類似度 */}
 
-                <h4>
-                  {u.username}
-                </h4>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    marginBottom: '10px'
+                  }}
+                >
 
-                {/* 類似度 */}
+                  <h3
+                    style={{
+                      margin: 0,
+                      fontSize: '24px',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    {u.username}
+                  </h3>
 
-                <div>
-                  類似度：
-                  {(u.similarity * 100)
-                    .toFixed(1)}%
+                  <span
+                    style={{
+                      background: '#2563eb',
+                      color: 'white',
+                      padding: '4px 10px',
+                      borderRadius: '999px',
+                      fontSize: '14px',
+                      fontWeight: 'bold',
+                      textAlign: 'left'
+                    }}
+                  >
+                    類似度 {(u.similarity * 100).toFixed(1)}%
+                  </span>
+
                 </div>
 
                 {/* おすすめ旅 */}
@@ -646,7 +669,13 @@ export default function MainPage({
 
                       padding: '10px',
 
-                      background: '#f5f5f5',
+                      background: darkMode
+                        ? '#1f2937'
+                        : '#f5f5f5',
+
+                      color: darkMode
+                        ? '#fff'
+                        : '#000',
 
                       borderRadius: '8px'
                     }}
