@@ -644,6 +644,7 @@ export default function MainPage({
                       style={{
                         fontWeight: 'bold',
                         fontSize: '24px',
+                        padding: '15px'
                       }}>
                       {trip.title}
                     </div>
@@ -660,21 +661,16 @@ export default function MainPage({
                           height: '180px',
                           objectFit: 'cover',
                           borderRadius: '10px',
-                          marginBottom: '10px'
+                          marginBottom: '10px',
+                          margin: '15px'
+
                         }}
                       />
 
                     )}
 
                     <div>
-                      日付：
-                      {trip.trip_date
-                        || '未設定'}
-                    </div>
-
-                    <div>
-                      天気：
-                      {trip.weather
+                      {trip.description
                         || '未設定'}
                     </div>
 
