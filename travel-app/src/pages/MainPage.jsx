@@ -71,7 +71,9 @@ function cosineSimilarity(a, b) {
 export default function MainPage({
   user,
   onLogout,
-  setPage
+  setPage,
+  darkMode,
+  setDarkMode
 }) {
 
   /* =========================
@@ -118,8 +120,7 @@ export default function MainPage({
      自分のtrip取得
   ========================= */
 
-  const fetchTrips = async () => {
-
+  async function fetchTrips() {
     const { data, error } =
       await supabase
         .from('trips')
@@ -142,8 +143,7 @@ export default function MainPage({
      profile取得
   ========================= */
 
-  const fetchProfile = async () => {
-
+  async function fetchProfile() {
     const { data, error } =
       await supabase
         .from('profiles')
@@ -163,8 +163,7 @@ export default function MainPage({
      類似ユーザー取得
   ========================= */
 
-  const fetchSimilarUsers = async () => {
-
+  async function fetchSimilarUsers() {
     // 全trip取得
     const {
       data: allTrips,
@@ -195,78 +194,47 @@ export default function MainPage({
     const userMap = {}
 
     allTrips.forEach((trip) => {
-
       if (!userMap[trip.user_id]) {
         userMap[trip.user_id] = []
       }
-
       userMap[trip.user_id].push(trip)
     })
 
     // 自分ベクトル
-    const myVector =
-      buildVector(trips)
+    const myVector = buildVector(trips)
 
     const results = []
 
-    Object.entries(userMap).forEach(
-      ([uid, userTrips]) => {
+    Object.entries(userMap).forEach(([uid, userTrips]) => {
+      // 自分除外
+      if (uid === user.id) return
 
-        // 自分除外
-        if (uid === user.id) return
+      // ベクトル
+      const vec = buildVector(userTrips)
 
-        // ベクトル
-        const vec =
-          buildVector(userTrips)
+      // 類似度
+      const similarity = cosineSimilarity(myVector, vec)
 
-        // 類似度
-        const similarity =
-          cosineSimilarity(
-            myVector,
-            vec
-          )
+      // profile
+      const profile = profiles.find((p) => String(p.id) === String(uid))
 
-        // profile
-        const profile =
-          profiles.find(
-            (p) =>
-              String(p.id) ===
-              String(uid)
-          )
+      // 満足度最大旅
+      const topTrips = [...userTrips]
+        .sort((a, b) => (b.satisfaction || 0) - (a.satisfaction || 0))
+        .slice(0, 1)
 
-        // 満足度最大旅
-        const topTrips =
-          [...userTrips]
-            .sort(
-              (a, b) =>
-                (b.satisfaction || 0) -
-                (a.satisfaction || 0)
-            )
-            .slice(0, 1)
-
-        results.push({
-          user_id: uid,
-
-          username:
-            profile?.username ||
-            '未設定',
-
-          similarity,
-
-          topTrips
-        })
-      }
-    )
+      results.push({
+        user_id: uid,
+        username: profile?.username || '未設定',
+        similarity,
+        topTrips
+      })
+    })
 
     // 類似度順
-    results.sort(
-      (a, b) =>
-        b.similarity - a.similarity
-    )
+    results.sort((a, b) => b.similarity - a.similarity)
 
-    setSimilarUsers(
-      results.slice(0, 5)
-    )
+    setSimilarUsers(results.slice(0, 5))
   }
 
   return (
