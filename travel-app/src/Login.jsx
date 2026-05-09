@@ -60,7 +60,7 @@ export default function Login({ onLogin }) {
 
     <div className="login-container">
       <div className="login-card">
-        <h2 className="login-title">Travel Log</h2>
+        <h2 className="login-title">てのひら列島</h2>
 
         <input
           className="login-input"

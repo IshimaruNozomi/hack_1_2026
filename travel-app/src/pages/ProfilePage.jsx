@@ -90,12 +90,15 @@ export default function ProfilePage({ user, setPage }) {
       {/* 表示 */}
       <div className="profile-card">
         <p><b>名前：</b> {profile.username || '未設定'}</p>
-        <p><b>自己紹介：</b></p>
-        <p>{profile.bio || 'まだ登録されていません'}</p>
+        <p>
+          <b>自己紹介：</b>
+          {profile.bio || 'まだ登録されていません'}
+        </p>
 
-        <p><b>居住地：</b></p>
-        <p>{profile.location_name || '未設定'}</p>
-
+        <p>
+          <b>居住地：</b>
+          {profile.location_name || '未設定'}
+        </p>
         <p>
           緯度: {profile.latitude}<br />
           経度: {profile.longitude}
