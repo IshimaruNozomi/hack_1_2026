@@ -287,6 +287,7 @@ export default function MainPage({
                 fetchTrips()
                 setShowForm(false)
               }}
+              onClose={() => setShowForm(false)}
             />
 
           </div>

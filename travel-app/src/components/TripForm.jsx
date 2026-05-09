@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import SelectMap from '../components/SelectMap'
 import './TripForm.css'
 
-export default function TripForm({ user, onSaved }) {
+export default function TripForm({ user, onSaved, onClose }) {
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -99,7 +99,9 @@ export default function TripForm({ user, onSaved }) {
       <h2 className="form-title">旅を記録</h2>
       <button
         type="button"
-        onClick={onClose}
+        onClick={() => {
+          if (typeof onClose === 'function') onClose()
+        }}
         className="form-close"
       >
         閉じる
