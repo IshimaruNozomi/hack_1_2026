@@ -98,3 +98,28 @@ body.dark .profile-card {
   background: #1f2937;
   color: white;
 }
+
+/* ===== Mobile responsive ===== */
+@media (max-width: 600px) {
+
+  .content { padding: 10px }
+
+  .map-container { height: 220px; margin: 10px; border-radius: 10px }
+
+  .trip-list { margin: 10px }
+
+  .modal-content { width: 95%; max-width: 360px; border-radius: 12px }
+
+  .fab {
+    right: 16px;
+    bottom: 16px;
+    width: 52px;
+    height: 52px;
+    font-size: 20px;
+    border-radius: 12px;
+  }
+
+  /* Ensure modal padding fits small screens */
+  .modal { padding: 12px }
+
+}
