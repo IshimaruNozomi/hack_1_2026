@@ -53,6 +53,35 @@ function App() {
 
   useEffect(() => {
     ;(async () => {
+      try {
+        // If the user clicked a magic link / confirmation link, process it
+        const { data, error } = await supabase.auth.getSessionFromUrl()
+
+        if (error) {
+          // not fatal — continue to regular fetch
+          console.error('getSessionFromUrl error:', error)
+        }
+
+        if (data?.session) {
+          setUser(data.session.user ?? null)
+
+          // Clean up the URL so tokens don't remain visible
+          try {
+            const u = new URL(window.location.href)
+            // remove hash and search params used by auth
+            window.history.replaceState(null, '', u.pathname + u.search)
+          } catch (e) {
+            console.error('clean url failed', e)
+          }
+
+          setLoading(false)
+          return
+        }
+
+      } catch (e) {
+        console.error('getSessionFromUrl failed', e)
+      }
+
       await fetchUser()
     })()
   }, [])

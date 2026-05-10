@@ -35,15 +35,16 @@ export default function Login({ onLogin }) {
     setErrorMsg('')
     setInfoMsg('登録中...')
     try {
-      const res = await supabase.auth.signUp({
-        email,
-        password
-      })
+      const redirectTo = typeof window !== 'undefined' ? window.location.origin : undefined
+      const res = await supabase.auth.signUp(
+        { email, password },
+        { emailRedirectTo: redirectTo }
+      )
       if (res.error) {
         setErrorMsg(res.error.message)
         setInfoMsg('')
       } else {
-        setInfoMsg('登録成功！ログインしてください')
+        setInfoMsg('登録手続きが完了しました。メールを確認してください。')
       }
     } catch (err) {
       console.error('Login: signUp failed', err)
@@ -78,7 +79,12 @@ export default function Login({ onLogin }) {
         <button className="signup-btn" onClick={handleSignup}>
           新規登録
         </button>
+
+        {infoMsg && <div style={{marginTop:10,color:'#064e3b',fontWeight:600}}>{infoMsg}</div>}
+        {errorMsg && <div style={{marginTop:10,color:'#b91c1c',fontWeight:600}}>{errorMsg}</div>}
       </div>
+
+      
 
     </div>
   )
